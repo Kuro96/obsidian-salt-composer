@@ -35,6 +35,7 @@ describe('Migration from v16 to v17', () => {
       (m) => m.id === 'gpt-5.3-codex (plan)',
     )
     const gpt54Plan = chatModels.find((m) => m.id === 'gpt-5.4 (plan)')
+    const gpt55Plan = chatModels.find((m) => m.id === 'gpt-5.5 (plan)')
 
     expect(gpt53CodexPlan).toMatchObject({
       providerType: 'openai-plan',
@@ -45,6 +46,11 @@ describe('Migration from v16 to v17', () => {
       providerType: 'openai-plan',
       providerId: 'openai-plan',
       model: 'gpt-5.4',
+    })
+    expect(gpt55Plan).toMatchObject({
+      providerType: 'openai-plan',
+      providerId: 'openai-plan',
+      model: 'gpt-5.5',
     })
     expect(chatModels.find((m) => m.id === 'custom-model')).toBeDefined()
   })

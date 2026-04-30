@@ -34,6 +34,12 @@ const DEFAULT_CHAT_MODELS_V17 = [
     model: 'gpt-5.4',
   },
   {
+    providerType: 'openai-plan',
+    providerId: 'openai-plan',
+    id: 'gpt-5.5 (plan)',
+    model: 'gpt-5.5',
+  },
+  {
     providerType: 'gemini-plan',
     providerId: 'gemini-plan',
     id: 'gemini-3-pro-preview (plan)',
