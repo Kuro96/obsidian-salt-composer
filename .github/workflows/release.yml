@@ -3,50 +3,56 @@ name: Release Obsidian plugin
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
+      - '[0-9]*.[0-9]*.[0-9]*'
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: '20'
 
       - name: Set Tag variable
         run: |
           echo "TAG=${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Bump version
-        run: npm run version $TAG
+        run: |
+          VERSION=$(node version-bump.mjs "$TAG")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Build plugin
         run: |
-          npm install
+          npm ci
           npm run build
 
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          tag="${GITHUB_REF#refs/tags/}"
-          gh release create "$tag" \
-            --title="$tag" \
+          gh release create "$TAG" \
+            --title="$VERSION" \
             main.js manifest.json styles.css
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
-          commit-message: 'version bump: ${{ env.TAG }}'
-          title: 'Version bump: ${{ env.TAG }}'
+          commit-message: 'chore(release): bump version to ${{ env.VERSION }}'
+          title: 'Version bump: ${{ env.VERSION }}'
           body: |
-            Automated version bump after release ${{ env.TAG }}
+            Automated version bump after release ${{ env.VERSION }}
 
             This PR was automatically created by the release workflow.
-          branch: 'version-bump/${{ env.TAG }}'
+          branch: 'version-bump/${{ env.VERSION }}'
           base: 'main'
           delete-branch: true
