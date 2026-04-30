@@ -1,6 +1,6 @@
 {
   "name": "obsidian-salt-composer",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Salt Composer is an Obsidian plugin for AI-assisted writing with vault context.",
   "main": "main.js",
   "scripts": {

@@ -494,7 +494,10 @@ function McpBuiltInWorkbench({ tools }: { tools: McpTool[] }) {
     })
   }
 
-  const setBuiltinAutoExecute = (toolName: string, autoExecute: boolean) => {
+  const setBuiltinToolOption = (
+    toolName: string,
+    patch: { autoAcceptReview?: boolean; autoExecute?: boolean },
+  ) => {
     void setSettings({
       ...settings,
       mcp: {
@@ -510,7 +513,7 @@ function McpBuiltInWorkbench({ tools }: { tools: McpTool[] }) {
             ...builtinToolOptions,
             [toolName]: {
               ...builtinToolOptions[toolName],
-              autoExecute,
+              ...patch,
             },
           },
         },
@@ -526,6 +529,17 @@ function McpBuiltInWorkbench({ tools }: { tools: McpTool[] }) {
       'vault_move',
       'command_execute',
       'vault_delete',
+    ].includes(tool.name),
+  )
+
+  const reviewAutoAcceptTools = tools.filter((tool) =>
+    [
+      'vault_write',
+      'vault_edit',
+      'vault_append',
+      'note_frontmatter_set',
+      'note_frontmatter_delete',
+      'vault_move',
     ].includes(tool.name),
   )
 
@@ -558,9 +572,27 @@ function McpBuiltInWorkbench({ tools }: { tools: McpTool[] }) {
             <McpToolControlCard
               key={tool.name}
               title={tool.name}
-              description={`Override the default policy for this ${getBuiltinToolTier(tool.name) ?? 'builtin'} tool and let Salt Composer auto-execute it without pausing first.`}
+              description={`Override the default approval policy for this ${getBuiltinToolTier(tool.name) ?? 'builtin'} tool and let Salt Composer start the tool call without pausing first. Diff review is controlled separately below.`}
               value={builtinToolOptions[tool.name]?.autoExecute ?? false}
-              onChange={(value) => setBuiltinAutoExecute(tool.name, value)}
+              onChange={(value) =>
+                setBuiltinToolOption(tool.name, { autoExecute: value })
+              }
+            />
+          ))}
+        </div>
+      )}
+
+      {reviewAutoAcceptTools.length > 0 && (
+        <div className="smtcmp-mcp-tool-detail-controls smtcmp-mcp-builtin-group">
+          {reviewAutoAcceptTools.map((tool) => (
+            <McpToolControlCard
+              key={tool.name}
+              title={`Auto-accept review: ${tool.name}`}
+              description="Apply this vault-tool proposal immediately instead of opening the diff review UI. This is separate from tool-call approval."
+              value={builtinToolOptions[tool.name]?.autoAcceptReview ?? false}
+              onChange={(value) =>
+                setBuiltinToolOption(tool.name, { autoAcceptReview: value })
+              }
             />
           ))}
         </div>

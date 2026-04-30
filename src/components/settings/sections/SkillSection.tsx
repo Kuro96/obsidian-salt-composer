@@ -6,6 +6,7 @@ import { useSettings } from '../../../contexts/settings-context'
 import SmartComposerPlugin from '../../../main'
 import { ObsidianButton } from '../../common/ObsidianButton'
 import { ObsidianSetting } from '../../common/ObsidianSetting'
+import { ObsidianTextArea } from '../../common/ObsidianTextArea'
 import { ObsidianTextInput } from '../../common/ObsidianTextInput'
 import { ObsidianToggle } from '../../common/ObsidianToggle'
 
@@ -19,6 +20,14 @@ type SkillItem = {
   description: string
   location: string
 }
+
+const listToText = (values: string[]) => values.join('\n')
+
+const textToList = (value: string) =>
+  value
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
 
 export function SkillSection({ plugin }: SkillSectionProps) {
   const { settings, setSettings } = useSettings()
@@ -140,6 +149,44 @@ export function SkillSection({ plugin }: SkillSectionProps) {
                 agents: {
                   ...settings.agents,
                   directoryName: value,
+                },
+              })
+            }}
+          />
+        </ObsidianSetting>
+
+        <ObsidianSetting
+          name="Skill paths"
+          desc="Additional local directories to scan for skills. Enter one absolute or vault-relative path per line."
+        >
+          <ObsidianTextArea
+            value={listToText(settings.skills.paths)}
+            placeholder="/path/to/skills"
+            onChange={async (value) => {
+              await setSettings({
+                ...settings,
+                skills: {
+                  ...settings.skills,
+                  paths: textToList(value),
+                },
+              })
+            }}
+          />
+        </ObsidianSetting>
+
+        <ObsidianSetting
+          name="Skill URLs"
+          desc="Remote skill definition URLs to include. Enter one URL per line."
+        >
+          <ObsidianTextArea
+            value={listToText(settings.skills.urls)}
+            placeholder="https://example.com/skill.md"
+            onChange={async (value) => {
+              await setSettings({
+                ...settings,
+                skills: {
+                  ...settings.skills,
+                  urls: textToList(value),
                 },
               })
             }}
