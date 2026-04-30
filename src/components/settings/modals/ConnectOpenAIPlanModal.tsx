@@ -140,7 +140,7 @@ function ConnectOpenAIPlanModalComponent({
 
     if (!supportsLocalOauthCallbackServer()) {
       setAutoError(
-        'On mobile, Smart Composer does not start a local callback server. Finish login in your browser, then paste the full redirect URL below and click "Connect with URL".',
+        'On mobile, Salt Composer does not start a local callback server. Finish login in your browser, then paste the full redirect URL below and click "Connect with URL".',
       )
       return
     }
@@ -231,7 +231,7 @@ function ConnectOpenAIPlanModalComponent({
         <div className="smtcmp-plan-connect-steps-title">How it works</div>
         <ol>
           <li>Login to OpenAI in your browser</li>
-          <li>Smart Composer connects automatically when you return</li>
+          <li>Salt Composer connects automatically when you return</li>
           <li>
             If automatic connect fails, paste the full redirect URL below and
             click &quot;Connect with URL&quot;
@@ -241,7 +241,7 @@ function ConnectOpenAIPlanModalComponent({
 
       <ObsidianSetting
         name="OpenAI login"
-        desc="Login to OpenAI in your browser. Smart Composer connects automatically when you return."
+        desc="Login to OpenAI in your browser. Salt Composer connects automatically when you return."
       >
         <ObsidianButton
           text="Login to OpenAI"
