@@ -27,39 +27,12 @@ const baseChatModelSchema = z.object({
 
 export const chatModelSchema = z.discriminatedUnion('providerType', [
   z.object({
-    providerType: z.literal('anthropic-plan'),
-    ...baseChatModelSchema.shape,
-    thinking: z
-      .object({
-        enabled: z.boolean(),
-        budget_tokens: z.number(),
-      })
-      .optional(),
-  }),
-  z.object({
     providerType: z.literal('openai-plan'),
     ...baseChatModelSchema.shape,
     reasoning: z
       .object({
         reasoning_effort: z.string().optional(),
         reasoning_summary: z.string().optional(),
-      })
-      .optional(),
-  }),
-  z.object({
-    providerType: z.literal('gemini-plan'),
-    ...baseChatModelSchema.shape,
-    thinking: z
-      .object({
-        enabled: z.boolean(),
-        // 'level' for Gemini 3 models, 'budget' for Gemini 2.5 models
-        control_mode: z.enum(['level', 'budget']).optional(),
-        // For Gemini 3 models
-        thinking_level: z.enum(['minimal', 'low', 'medium', 'high']).optional(),
-        // For Gemini 2.5 models: -1 for dynamic, 0 to disable, or specific token count
-        thinking_budget: z.number().optional(),
-        // Return thought summaries in response
-        include_thoughts: z.boolean().optional(),
       })
       .optional(),
   }),
