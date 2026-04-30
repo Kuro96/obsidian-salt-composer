@@ -15,21 +15,25 @@ function normalizeVersionTag(tag) {
 
 const normalizedVersion = normalizeVersionTag(targetVersion)
 
+function writeJsonFile(path, value) {
+    writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`)
+}
+
 // read minAppVersion from manifest.json and bump version to target version
 let manifest = JSON.parse(readFileSync('manifest.json', 'utf8'))
 const { minAppVersion } = manifest
 manifest.version = normalizedVersion
-writeFileSync('manifest.json', JSON.stringify(manifest, null, 2))
+writeJsonFile('manifest.json', manifest)
 
 // update versions.json with target version and minAppVersion from manifest.json
 let versions = JSON.parse(readFileSync('versions.json', 'utf8'))
 versions[normalizedVersion] = minAppVersion
-writeFileSync('versions.json', JSON.stringify(versions, null, 2))
+writeJsonFile('versions.json', versions)
 
 // update package.json with target version
 let packageJson = JSON.parse(readFileSync('package.json', 'utf8'))
 packageJson.version = normalizedVersion
-writeFileSync('package.json', JSON.stringify(packageJson, null, 2))
+writeJsonFile('package.json', packageJson)
 
 // keep package-lock.json aligned with the released version
 let packageLock = JSON.parse(readFileSync('package-lock.json', 'utf8'))
@@ -37,6 +41,6 @@ packageLock.version = normalizedVersion
 if (packageLock.packages && packageLock.packages['']) {
     packageLock.packages[''].version = normalizedVersion
 }
-writeFileSync('package-lock.json', JSON.stringify(packageLock, null, 2))
+writeJsonFile('package-lock.json', packageLock)
 
 console.log(normalizedVersion)
