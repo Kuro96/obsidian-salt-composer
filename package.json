@@ -1,7 +1,7 @@
 {
-  "name": "obsidian-smart-composer",
+  "name": "obsidian-salt-composer",
   "version": "1.2.9",
-  "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+  "description": "Salt Composer is an Obsidian plugin for AI-assisted writing with vault context.",
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
@@ -16,7 +16,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "devDependencies": {
     "@types/jest": "^29.5.13",
     "@types/lodash.debounce": "^4.0.9",
