@@ -99,7 +99,7 @@ export function McpSection({ app, plugin }: McpSectionProps) {
             External MCP servers are not supported on mobile devices
           </div>
           <div className="smtcmp-settings-desc">
-            Built-in tools are available on mobile. Open Smart Composer on
+            Built-in tools are available on mobile. Open Salt Composer on
             desktop to manage external MCP servers.
           </div>
         </div>
@@ -161,7 +161,7 @@ export function McpSection({ app, plugin }: McpSectionProps) {
                   Built-in Vault Tools
                 </div>
                 <div className="smtcmp-settings-desc smtcmp-mcp-panel-desc">
-                  Built-in tools bundled with Smart Composer. These are runtime
+                  Built-in tools bundled with Salt Composer. These are runtime
                   capabilities, not per-server installs.
                 </div>
               </div>
@@ -558,7 +558,7 @@ function McpBuiltInWorkbench({ tools }: { tools: McpTool[] }) {
             <McpToolControlCard
               key={tool.name}
               title={tool.name}
-              description={`Override the default policy for this ${getBuiltinToolTier(tool.name) ?? 'builtin'} tool and let Smart Composer auto-execute it without pausing first.`}
+              description={`Override the default policy for this ${getBuiltinToolTier(tool.name) ?? 'builtin'} tool and let Salt Composer auto-execute it without pausing first.`}
               value={builtinToolOptions[tool.name]?.autoExecute ?? false}
               onChange={(value) => setBuiltinAutoExecute(tool.name, value)}
             />
@@ -659,7 +659,7 @@ function McpToolDetailPanel({
       <div className="smtcmp-mcp-tool-detail-controls">
         <McpToolControlCard
           title="Auto-execute"
-          description="Allows Smart Composer to run this tool without asking first. Turn this on only if you are comfortable with the model taking action immediately for this server."
+          description="Allows Salt Composer to run this tool without asking first. Turn this on only if you are comfortable with the model taking action immediately for this server."
           value={
             server.config.toolOptions[tool.name]?.allowAutoExecution ?? false
           }

@@ -63,7 +63,7 @@ export function ChatSection() {
 
       <ObsidianSetting
         name="Project instructions"
-        desc="Smart Composer now reads project instructions from AGENTS.md files instead of a settings-based system prompt."
+        desc="Salt Composer now reads project instructions from AGENTS.md files instead of a settings-based system prompt."
       >
         <div className="smtcmp-settings-desc">
           Add an <code>AGENTS.md</code> file at the vault root for shared rules,
@@ -128,7 +128,7 @@ export function ChatSection() {
 
       <ObsidianSetting
         name="Auto-allow built-in read/write tools"
-        desc="When enabled, Smart Composer may modify notes in your vault without pausing for approval on normal write operations. Danger-zone tools such as vault_delete still require approval."
+        desc="When enabled, Salt Composer may modify notes in your vault without pausing for approval on normal write operations. Danger-zone tools such as vault_delete still require approval."
       >
         <ObsidianToggle
           value={settings.chatOptions.defaultAllowBuiltinReadWrite}
