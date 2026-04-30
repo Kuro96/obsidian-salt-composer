@@ -4,7 +4,6 @@
 - The plugin bundle entrypoint is `src/main.ts`. `main.ts` registers the Obsidian views (`ChatView`, `ReviewView`) and is the real wiring point for plugin-level behavior.
 - Chat/tool execution is centered in `src/core/harness/ConversationHarness.ts`, `TurnEngine.ts`, and `ToolExecutor.ts`. Built-in and external tools are assembled in `src/core/tools/buildToolRegistry.ts`.
 - Built-in tool approval defaults now come from `settings.mcp.builtin.policy` and per-tool overrides from `settings.mcp.builtin.toolOptions`. Do not assume `chatOptions.defaultAllowBuiltinReadWrite` is the only source of truth; it is now a compatibility fallback.
-- Settings schema migrations stop at version `17`. Do not add new `17_to_*` migration files or bump the schema version; fold future settings migration work into `src/settings/schema/migrations/16_to_17.ts`.
 - Before changing repo structure or UI, check for existing reusable paths first. This repo already has established chat/review/settings patterns; prefer extending those over introducing parallel flows.
 - Database schema changes are a two-step process: generate/update Drizzle SQL, then run `npm run migrate:compile` to refresh `src/database/migrations.json`. Changes in `drizzle/` are not used at runtime until compiled.
 - `esbuild.config.mjs` includes a required PGlite shim for Obsidian bundling. Do not remove or bypass it unless you verify PGlite still works in the plugin runtime.
