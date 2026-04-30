@@ -1,212 +1,121 @@
-<h1 align="center">Smart Composer</h1>
+<h1 align="center">Salt Composer</h1>
 
 <p align="center">
-  <a href="https://github.com/glowingjade/obsidian-smart-composer/wiki">Documentation</a>
+  <a href="https://github.com/Kuro96/obsidian-salt-composer">Repository</a>
   ·
-  <a href="https://github.com/glowingjade/obsidian-smart-composer/issues">Report Bug</a>
+  <a href="https://github.com/Kuro96/obsidian-salt-composer/issues">Report Bug</a>
   ·
-  <a href="https://github.com/glowingjade/obsidian-smart-composer/discussions">Discussions</a>
+  <a href="https://github.com/Kuro96/obsidian-salt-composer/discussions">Discussions</a>
 </p>
+
+> [!IMPORTANT]
+> Salt Composer is a standalone public fork of [glowingjade/obsidian-smart-composer](https://github.com/glowingjade/obsidian-smart-composer).
+> Huge thanks to Heesu Suh, the glowingjade project, and every contributor who built the original Smart Composer.
 
 > [!NOTE]
 > **What's New**
 >
 > **v1.2.8** — Connect your Gemini account
-> 
+>
 > **v1.2.7** — Connect your Claude or OpenAI account directly (no API key required)
-> 
+>
 > **v1.2.6** — Support for GPT-5.2, Opus 4.5, Gemini 3, and Grok 4.1
-> 
-> **🔌 MCP Support** — Connect Smart Composer to external tools and data sources via the [Model Context Protocol](https://modelcontextprotocol.io)
-
-> [!WARNING]
-> **⚠️ Maintenance Notice**
 >
-> This plugin is currently maintained by a single developer and is **not under active development**.  
-> Occasional updates or bug fixes may still be released, but **issues and feature requests may not be reviewed promptly**.
->
-> **🔗 Community Forks**  
-> A list of community-maintained forks is available in the [Community Fork Collection](https://github.com/glowingjade/obsidian-smart-composer/discussions/496).  
-> If you're maintaining a fork, feel free to add it there. And if you're simply interested in exploring alternative versions, you're welcome to check it out as well.
+> **🔌 MCP Support** — Connect Salt Composer to external tools and data sources via the [Model Context Protocol](https://modelcontextprotocol.io)
 
 > ### Risks of connecting a Claude subscription
-> 
+>
 > As of January 2026, Anthropic has restricted third-party OAuth access, citing Terms of Service violations.
-> 
-> Smart Composer's subscription connect uses the same OAuth-style flow that tools like OpenCode have used. There are reports of **Claude accounts being banned or restricted** when subscription OAuth is used via third-party clients (example: [https://github.com/anomalyco/opencode/issues/6930](https://github.com/anomalyco/opencode/issues/6930)). For **OpenAI (ChatGPT)** and **Google (Gemini)**, I have not seen comparable ban reports so far, but this is still not the same as official API access, and enforcement can change at any time.
-> 
-> **Use at your own risk.** Keep usage limited to personal, interactive sessions and avoid any automation.
+>
+> Salt Composer's subscription connect uses the same OAuth-style flow that tools like OpenCode have used. There are reports of **Claude accounts being banned or restricted** when subscription OAuth is used via third-party clients (example: [https://github.com/anomalyco/opencode/issues/6930](https://github.com/anomalyco/opencode/issues/6930)). For **OpenAI (ChatGPT)** and **Google (Gemini)**, I have not seen comparable ban reports so far, but this is still not the same as official API access, and enforcement can change at any time.
+>
+> **Use at your own risk.** Keep usage limited to personal, interactive sessions and avoid any automation.
 
 ![SC1_Title.gif](https://github.com/user-attachments/assets/a50a1f80-39ff-4eba-8090-e3d75e7be98c)
 
-Everytime we ask ChatGPT, we need to put so much context information for each query. Why spend time putting background infos that are already in your vault?
-
-**Smart Composer is an Obsidian plugin that helps you write efficiently with AI by easily referencing your vault content.** Inspired by Cursor AI and ChatGPT Canvas, this plugin unifies your note-taking and content creation process within Obsidian.
+Salt Composer helps you write efficiently with AI by referencing your vault content directly inside Obsidian. Inspired by Cursor AI and ChatGPT Canvas, it keeps note-taking and content creation in one place.
 
 ## Features
 
 ### Contextual Chat
 
-![SC2_ContextChat.gif](https://github.com/user-attachments/assets/8da4c189-399a-450a-9591-95f1c9af1bc8)
+Select files and folders as conversation context with `@<fname>` and get answers based on vault content.
 
-Upgrade your note-taking experience with our Contextual AI Assistant, inspired by Cursor AI. Unlike typical AI plugins, our assistant allows you to **precisely select the context for your conversation.**
+### Multimedia Context
 
-- Type `@<fname>` to choose specific files/folders as your conversation context
-- Get responses based on selected vault content
-
-#### Multimedia Context
-
-<img src="https://github.com/user-attachments/assets/b22175d4-80a2-4122-8555-2b9dd4987f93" alt="SC2-2_MultiContext.png" width="360"/>
-
-Now, you can **add website links and images** as additional context for your queries.
-
-- Website content is automatically extracted
-- **Image support**: Add images directly to your chat through:
-  - Upload button
-  - Drag & drop
-  - Paste from clipboard
-- **Youtube link support**: YouTube transcripts are fetched and included as context
-- **Coming soon**: Support for external files (PDF, DOCX, ...)
+- Add website links and images as context
+- Upload, drag and drop, or paste images
+- YouTube transcripts are fetched automatically
 
 ### Apply Edit
 
-![SC3_ApplyEdit.gif](https://github.com/user-attachments/assets/35ee03ff-4a61-4d08-8032-ca61fb37dcf1)
-
-Smart Composer **suggests edits to your document.** You can apply with a single click.
-
-- Offers document change recommendations
-- Apply suggested changes instantly
+Salt Composer suggests edits to your document and lets you apply them with one click.
 
 ### Vault Search (RAG)
 
-![SC4_RAG-ezgif.com-crop-video.gif](https://github.com/user-attachments/assets/91c3ab8d-56d7-43b8-bb4a-1e73615a40ec)
-
-**Automatically find and use relevant notes** from your vault to enhance AI responses.
-
-- Hit `Cmd+Shift+Enter` to run Vault Search answer
-- Semantic search across your vault to find the most relevant context
+- `Cmd+Shift+Enter` runs Vault Search
+- Semantic search finds the most relevant notes
 
 ### Model Context Protocol (MCP)
 
-![mcp_demo](https://github.com/user-attachments/assets/4c80a1af-4cbf-4aa4-90d2-457499553357)
-
-Connect Smart Composer to external MCP servers.
-MCP lets you use powerful third-party tools and data sources right inside your chat.
+Connect Salt Composer to external MCP servers and use third-party tools and data sources inside chat.
 
 ### Additional Features
 
-- **Custom Model Selection**: Use your own model by setting your API Key (stored locally). Supported API providers:
-  - OpenAI
-  - Anthropic
-  - Google (Gemini)
-  - Groq
-  - DeepSeek
-  - OpenRouter
-  - Azure OpenAI
-  - Ollama
-  - LM Studio
-  - MorphLLM
-  - Any other OpenAI-compatible providers
-- **Local Model Support**: Run open-source LLMs and embedding models locally with [Ollama](https://ollama.ai) for complete privacy and offline usage.
-- **Project Instructions via `AGENTS.md`**: Define shared instructions in `AGENTS.md` at the vault root, and add nested `AGENTS.md` files in subfolders for folder-specific guidance.
-- **Prompt Templates**: Create and reuse templates for common queries by typing `/` in the chat view. Perfect for standardizing repetitive tasks.
-  - Create templates from any selected text with one click
+- Custom model selection with local API key storage
+- Local model support via [Ollama](https://ollama.ai)
+- Project instructions via `AGENTS.md`
+- Prompt templates with `/` in the chat view
 
 ## Getting Started
 
-> [!IMPORTANT]
-> **Installer Version Requirement**  
-> Smart Composer requires a recent version of the Obsidian installer. If you experience issues with the plugin not loading properly:
-> 
-> 1. First, try updating Obsidian normally at `Settings > General > Check for updates`.
-> 
-> 2. If issues persist, manually update your Obsidian installer:
->    - Download the latest installer from [Obsidian's download page](https://obsidian.md/download)
->    - Close Obsidian completely
->    - Run the new installer
-
 1. Open Obsidian Settings
-2. Navigate to "Community plugins" and click "Browse"
-3. Search for "Smart Composer" and click Install
-4. Enable the plugin in Community plugins
-5. Set up Smart Composer in plugin settings:
-   - **Connect subscription (no API key)**: Connect your Claude/OpenAI account in `Settings > Smart Composer > Connect your subscription`
-   - **API Providers (usage-based billing)**: Add an API key in `Settings > Smart Composer > Providers`
-     - OpenAI: [ChatGPT API Keys](https://platform.openai.com/api-keys)
-     - Anthropic: [Claude API Keys](https://console.anthropic.com/settings/keys)
-     - Gemini: [Gemini API Keys](https://aistudio.google.com/apikey)
+2. Go to "Community plugins" and click "Browse"
+3. Search for "Salt Composer" and install it
+4. Enable the plugin
+5. Configure Salt Composer in plugin settings
 
 > [!TIP]
-> **Looking for a free option?**  
-> Gemini API provides the best performance among free models for Smart Composer. Recommended for users looking for a free option.
-> _When using free APIs, please review the provider’s privacy policy before sending sensitive data._
+> Gemini API is currently the strongest free option for Salt Composer.
 
-**📚 For detailed setup instructions and documentation, please visit our [Documentation](https://github.com/glowingjade/obsidian-smart-composer/wiki).**
+For setup details, visit the [repository](https://github.com/Kuro96/obsidian-salt-composer).
 
 ## Roadmap
 
-To see our up-to-date project roadmap and progress, please check out our [GitHub Projects kanban board](https://github.com/glowingjade/obsidian-smart-composer/projects?query=is%3Aopen).
-
-Some of our planned features include:
-
-- Support for external files (PDF, DOCX, etc.)
-- Mentioning with tags or other metadata
+Project tracking lives in the [GitHub Projects board](https://github.com/Kuro96/obsidian-salt-composer/projects?query=is%3Aopen).
 
 ## Feedback and Support
 
-We value your input and want to ensure you can easily share your thoughts and report any issues:
-
-- **Bug Reports**: If you encounter any bugs or unexpected behavior, please submit an issue on our [GitHub Issues](https://github.com/glowingjade/obsidian-smart-composer/issues) page. Be sure to include as much detail as possible to help us reproduce and address the problem.
-
-- **Feature Requests**: For new feature ideas or enhancements, please use our [GitHub Discussions - Ideas & Feature Requests](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/ideas-feature-requests) page. Create a new discussion to share your suggestions. This allows for community engagement and helps us prioritize future developments.
-
-- **Show and Tell**: We love seeing how you use Smart Composer! Share your unique use cases, workflows, or interesting applications of the plugin in the [GitHub Discussions - Smart Composer Showcase](https://github.com/glowingjade/obsidian-smart-composer/discussions/categories/smart-composer-showcase) page.
-
-Your feedback and experiences are crucial in making Smart Composer better for everyone!
+- Bug reports: [Issues](https://github.com/Kuro96/obsidian-salt-composer/issues)
+- Feature requests: [Discussions](https://github.com/Kuro96/obsidian-salt-composer/discussions/categories/ideas-feature-requests)
+- Show and tell: [Salt Composer Showcase](https://github.com/Kuro96/obsidian-salt-composer/discussions/categories/salt-composer-showcase)
 
 ## Contributing
 
-We welcome all kinds of contributions to Smart Composer, including bug reports, bug fixes, documentation improvements, and feature enhancements.
-
-**For major feature ideas, please create an issue first to discuss feasibility and implementation approach.**
-
-If you're interested in contributing, please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed information on:
-
-- Setting up the development environment
-- Our development workflow
-- Working with the database schema
-- The process for submitting pull requests
-- Known issues and solutions for developers
-
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and workflow details.
 
 ## Contributors
 
 ### Core Team
 
-These contributors were instrumental in shaping the initial vision, architecture, and design of Smart Composer:
-
-**[@glowingjade](https://github.com/glowingjade)** ([Twitter](https://x.com/andy_suh_)), **[@kevin-on](https://github.com/kevin-on)**, **[@realsnoopso](https://github.com/realsnoopso)** ([Twitter](https://twitter.com/RealSnoopSo) · [LinkedIn](https://linkedin.com/in/realsnoopso)), **[@woosukji](https://github.com/woosukji)**
+The original Smart Composer core contributors were instrumental in the project's foundation: [@glowingjade](https://github.com/glowingjade), [@kevin-on](https://github.com/kevin-on), [@realsnoopso](https://github.com/realsnoopso), and [@woosukji](https://github.com/woosukji).
 
 ### Additional Contributors
 
-We also want to thank everyone else who has contributed. Your time and effort help make Smart Composer better for everyone!
+Thank you to everyone who has contributed to Smart Composer and Salt Composer.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+Salt Composer is licensed under the [GNU General Public License v3.0](LICENSE).
 
-## Support the Project
+The original Smart Composer MIT license notice is preserved in [NOTICE](NOTICE).
 
-If you find Smart Composer valuable, consider supporting its development:
+## Acknowledgements
 
-<a href="https://www.buymeacoffee.com/kevin.on" target="_blank">
-  <img src="https://github.com/user-attachments/assets/e794767d-b7dd-40eb-9132-e48ae7088000" alt="Buy Me A Coffee" width="180">
-</a>
+Salt Composer builds on the original Smart Composer project. If you want to support the upstream authors, see the original project's support links and updates from [@andy_suh_](https://x.com/andy_suh_).
 
-Follow me on X (Twitter) [@andy_suh_](https://x.com/andy_suh_) for updates and announcements!
-
-Your support helps maintain and improve this plugin. Every contribution is appreciated and makes a difference. Thank you for your support!
+For Salt Composer updates, watch or star this repository.
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=glowingjade/obsidian-smart-composer&type=Date)](https://star-history.com/#glowingjade/obsidian-smart-composer&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=Kuro96/obsidian-salt-composer&type=Date)](https://star-history.com/#Kuro96/obsidian-salt-composer&Date)
