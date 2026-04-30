@@ -3,13 +3,11 @@ import { ChatModel } from '../../types/chat-model.types'
 import { LLMProvider } from '../../types/provider.types'
 
 import { AnthropicProvider } from './anthropic'
-import { AnthropicClaudeCodeProvider } from './anthropicClaudeCodeProvider'
 import { AzureOpenAIProvider } from './azureOpenaiProvider'
 import { BaseLLMProvider } from './base'
 import { DeepSeekStudioProvider } from './deepseekStudioProvider'
 import { LLMModelNotFoundException } from './exception'
 import { GeminiProvider } from './gemini'
-import { GeminiPlanProvider } from './geminiPlanProvider'
 import { LmStudioProvider } from './lmStudioProvider'
 import { MistralProvider } from './mistralProvider'
 import { OllamaProvider } from './ollama'
@@ -55,14 +53,8 @@ export function getProviderClient({
     : undefined
 
   switch (provider.type) {
-    case 'anthropic-plan': {
-      return new AnthropicClaudeCodeProvider(provider, onProviderUpdate)
-    }
     case 'openai-plan': {
       return new OpenAICodexProvider(provider, onProviderUpdate)
-    }
-    case 'gemini-plan': {
-      return new GeminiPlanProvider(provider, onProviderUpdate)
     }
     case 'anthropic': {
       return new AnthropicProvider(provider)
