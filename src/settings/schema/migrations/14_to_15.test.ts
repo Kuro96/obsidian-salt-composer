@@ -9,7 +9,7 @@ describe('Migration from v14 to v15', () => {
     expect(result.version).toBe(15)
   })
 
-  it('should add default plan providers and keep custom providers', () => {
+  it('should add the default OpenAI plan provider and keep custom providers', () => {
     const oldSettings = {
       version: 14,
       providers: [
@@ -22,14 +22,13 @@ describe('Migration from v14 to v15', () => {
 
     const result = migrateFrom14To15(oldSettings)
     const providers = result.providers as { type: string; id: string }[]
-    expect(providers.find((p) => p.type === 'anthropic-plan')).toBeDefined()
     expect(providers.find((p) => p.type === 'openai-plan')).toBeDefined()
     expect(
       providers.find((p) => p.id === 'custom-provider' && p.type === 'custom'),
     ).toBeDefined()
   })
 
-  it('should add plan chat models with expected settings', () => {
+  it('should add OpenAI plan chat models with expected settings', () => {
     const oldSettings = {
       version: 14,
       providers: [],
@@ -49,27 +48,10 @@ describe('Migration from v14 to v15', () => {
       providerType: string
       providerId: string
       model: string
-      thinking?: { enabled?: boolean; budget_tokens?: number }
     }[]
 
-    const opusPlan = chatModels.find((m) => m.id === 'claude-opus-4.5 (plan)')
-    const sonnetPlan = chatModels.find(
-      (m) => m.id === 'claude-sonnet-4.5 (plan)',
-    )
     const gptPlan = chatModels.find((m) => m.id === 'gpt-5.2 (plan)')
 
-    expect(opusPlan).toMatchObject({
-      providerType: 'anthropic-plan',
-      providerId: 'anthropic-plan',
-      model: 'claude-opus-4-5',
-      thinking: { enabled: true, budget_tokens: 8192 },
-    })
-    expect(sonnetPlan).toMatchObject({
-      providerType: 'anthropic-plan',
-      providerId: 'anthropic-plan',
-      model: 'claude-sonnet-4-5',
-      thinking: { enabled: true, budget_tokens: 8192 },
-    })
     expect(gptPlan).toMatchObject({
       providerType: 'openai-plan',
       providerId: 'openai-plan',

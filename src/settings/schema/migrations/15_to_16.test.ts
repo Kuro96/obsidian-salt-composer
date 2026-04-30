@@ -9,7 +9,7 @@ describe('Migration from v15 to v16', () => {
     expect(result.version).toBe(16)
   })
 
-  it('should add gemini plan provider and keep custom providers', () => {
+  it('should keep custom providers while applying default providers', () => {
     const oldSettings = {
       version: 15,
       providers: [
@@ -21,13 +21,13 @@ describe('Migration from v15 to v16', () => {
 
     const result = migrateFrom15To16(oldSettings)
     const providers = result.providers as { type: string; id: string }[]
-    expect(providers.find((p) => p.type === 'gemini-plan')).toBeDefined()
+    expect(providers.find((p) => p.type === 'openai-plan')).toBeDefined()
     expect(
       providers.find((p) => p.id === 'custom-provider' && p.type === 'custom'),
     ).toBeDefined()
   })
 
-  it('should add gemini plan chat models', () => {
+  it('should keep custom models while applying default chat models', () => {
     const oldSettings = {
       version: 15,
       providers: [],
@@ -49,22 +49,12 @@ describe('Migration from v15 to v16', () => {
       model: string
     }[]
 
-    const proPlan = chatModels.find(
-      (m) => m.id === 'gemini-3-pro-preview (plan)',
-    )
-    const flashPlan = chatModels.find(
-      (m) => m.id === 'gemini-3-flash-preview (plan)',
-    )
+    const gptPlan = chatModels.find((m) => m.id === 'gpt-5.2 (plan)')
 
-    expect(proPlan).toMatchObject({
-      providerType: 'gemini-plan',
-      providerId: 'gemini-plan',
-      model: 'gemini-3-pro-preview',
-    })
-    expect(flashPlan).toMatchObject({
-      providerType: 'gemini-plan',
-      providerId: 'gemini-plan',
-      model: 'gemini-3-flash-preview',
+    expect(gptPlan).toMatchObject({
+      providerType: 'openai-plan',
+      providerId: 'openai-plan',
+      model: 'gpt-5.2',
     })
     expect(chatModels.find((m) => m.id === 'custom-model')).toBeDefined()
   })
