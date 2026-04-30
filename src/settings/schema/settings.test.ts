@@ -1,5 +1,4 @@
 import {
-  DEFAULT_APPLY_MODEL_ID,
   DEFAULT_CHAT_MODELS,
   DEFAULT_CHAT_MODEL_ID,
   DEFAULT_EMBEDDING_MODELS,
@@ -23,7 +22,6 @@ describe('parseSmartComposerSettings', () => {
       embeddingModels: [...DEFAULT_EMBEDDING_MODELS],
 
       chatModelId: DEFAULT_CHAT_MODEL_ID,
-      applyModelId: DEFAULT_APPLY_MODEL_ID,
       embeddingModelId: 'openai/text-embedding-3-small',
 
       agents: {
@@ -59,14 +57,14 @@ describe('parseSmartComposerSettings', () => {
     })
   })
 
-  it('should coerce version 18 settings back to schema version 17', () => {
+  it('should coerce version 19 settings back to schema version 18', () => {
     const result = parseSmartComposerSettings({
-      version: 18,
+      version: 19,
       systemPrompt: 'test prompt',
     })
 
     expect(result.version).toBe(SETTINGS_SCHEMA_VERSION)
-    expect(result.version).toBe(17)
+    expect(result.version).toBe(18)
     expect(result.vaultChatEnabled).toBe(true)
     expect(result.agents.directoryName).toBe('.agents')
     expect(result).not.toHaveProperty('systemPrompt')
