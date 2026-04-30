@@ -1,7 +1,4 @@
-import {
-  RECOMMENDED_MODELS_FOR_APPLY,
-  RECOMMENDED_MODELS_FOR_CHAT,
-} from '../../../constants'
+import { RECOMMENDED_MODELS_FOR_CHAT } from '../../../constants'
 import { useSettings } from '../../../contexts/settings-context'
 import { ObsidianDropdown } from '../../common/ObsidianDropdown'
 import { ObsidianSetting } from '../../common/ObsidianSetting'
@@ -33,29 +30,6 @@ export function ChatSection() {
             await setSettings({
               ...settings,
               chatModelId: value,
-            })
-          }}
-        />
-      </ObsidianSetting>
-
-      <ObsidianSetting
-        name="Apply model"
-        desc="Choose the model you want to use for apply feature."
-      >
-        <ObsidianDropdown
-          value={settings.applyModelId}
-          options={Object.fromEntries(
-            settings.chatModels
-              .filter(({ enable }) => enable ?? true)
-              .map((chatModel) => [
-                chatModel.id,
-                `${chatModel.id}${RECOMMENDED_MODELS_FOR_APPLY.includes(chatModel.id) ? ' (Recommended)' : ''}`,
-              ]),
-          )}
-          onChange={async (value) => {
-            await setSettings({
-              ...settings,
-              applyModelId: value,
             })
           }}
         />
