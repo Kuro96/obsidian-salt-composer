@@ -58,7 +58,7 @@ export function buildCodexAuthorizeUrl(params: {
     id_token_add_organizations: 'true',
     codex_cli_simplified_flow: 'true',
     state: params.state,
-    originator: 'obsidian-smart-composer',
+    originator: 'obsidian-salt-composer',
   })
   return `${CODEX_ISSUER}/oauth/authorize?${query.toString()}`
 }
