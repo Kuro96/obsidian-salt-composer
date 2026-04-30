@@ -229,9 +229,7 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
    * @see https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking
    */
   {
-    check: (model) =>
-      model.providerType === 'anthropic' ||
-      model.providerType === 'anthropic-plan',
+    check: (model) => model.providerType === 'anthropic',
     SettingsComponent: (props: SettingsComponentProps) => {
       const DEFAULT_THINKING_BUDGET_TOKENS = 8192
 
@@ -326,13 +324,10 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
    * @see https://ai.google.dev/gemini-api/docs/thinking
    */
   {
-    check: (model) =>
-      model.providerType === 'gemini' || model.providerType === 'gemini-plan',
+    check: (model) => model.providerType === 'gemini',
     SettingsComponent: (props: SettingsComponentProps) => {
       const { model, plugin, onClose } = props
-      const typedModel = model as ChatModel & {
-        providerType: 'gemini' | 'gemini-plan'
-      }
+      const typedModel = model as ChatModel & { providerType: 'gemini' }
       const [thinkingEnabled, setThinkingEnabled] = useState<boolean>(
         typedModel.thinking?.enabled ?? false,
       )

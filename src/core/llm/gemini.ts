@@ -517,7 +517,7 @@ export class GeminiProvider extends BaseLLMProvider<
    * - Gemini 2.5 models use thinkingBudget
    */
   static buildThinkingConfig(
-    model: ChatModel & { providerType: 'gemini' | 'gemini-plan' },
+    model: ChatModel & { providerType: 'gemini' },
   ): ThinkingConfig | undefined {
     if (!model.thinking?.enabled) {
       return undefined
