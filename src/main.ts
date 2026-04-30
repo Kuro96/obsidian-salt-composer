@@ -39,7 +39,7 @@ export default class SmartComposerPlugin extends Plugin {
     this.registerView(APPLY_VIEW_TYPE, (leaf) => new ApplyView(leaf, this))
 
     // This creates an icon in the left ribbon.
-    this.addRibbonIcon('wand-sparkles', 'Open smart composer', () =>
+    this.addRibbonIcon('wand-sparkles', 'Open Salt Composer', () =>
       this.openChatView(),
     )
 
@@ -385,7 +385,7 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
     if (leaves.length === 0 || !(leaves[0].view instanceof ChatView)) {
       return
     }
-    new Notice('Reloading "smart-composer" due to migration', 1000)
+    new Notice('Reloading "obsidian-salt-composer" due to migration', 1000)
     leaves[0].detach()
     await this.activateChatView()
   }
