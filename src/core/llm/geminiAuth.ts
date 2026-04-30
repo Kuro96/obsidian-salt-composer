@@ -42,11 +42,21 @@ const CALLBACK_TIMEOUT_MS = 5 * 60 * 1000
 let geminiCallbackServer: Server | undefined
 let isGeminiCallbackStopping = false
 
+function assertGeminiOAuthConfigured() {
+  if (!GEMINI_OAUTH_CLIENT_ID || !GEMINI_OAUTH_CLIENT_SECRET) {
+    throw new Error(
+      'Gemini subscription login is not configured for this build. Configure a Google OAuth client before enabling Gemini plan connections.',
+    )
+  }
+}
+
 export function buildGeminiAuthorizeUrl(params: {
   pkce: GeminiPkceCodes
   state: string
   redirectUri?: string
 }): string {
+  assertGeminiOAuthConfigured()
+
   const redirectUri = params.redirectUri ?? GEMINI_OAUTH_REDIRECT_URI
   const query = new URLSearchParams({
     response_type: 'code',
@@ -83,6 +93,8 @@ export async function exchangeGeminiCodeForTokens(params: {
   redirectUri?: string
   pkceVerifier: string
 }): Promise<GeminiTokenResponse & { email?: string }> {
+  assertGeminiOAuthConfigured()
+
   const tokens = await postFormUrlEncoded<GeminiTokenResponse>(
     'https://oauth2.googleapis.com/token',
     {
@@ -109,6 +121,8 @@ export async function exchangeGeminiCodeForTokens(params: {
 export async function refreshGeminiAccessToken(
   refreshToken: string,
 ): Promise<GeminiTokenResponse> {
+  assertGeminiOAuthConfigured()
+
   return postFormUrlEncoded<GeminiTokenResponse>(
     'https://oauth2.googleapis.com/token',
     {

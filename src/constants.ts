@@ -34,9 +34,8 @@ export const CLAUDE_CODE_SYSTEM_MESSAGE =
 export const CLAUDE_CODE_USER_AGENT = 'claude-cli/2.1.2 (external, cli)'
 
 // Keep in sync with opencode-gemini-auth constants.
-export const GEMINI_OAUTH_CLIENT_ID =
-  'REMOVED_GOOGLE_OAUTH_CLIENT_ID'
-export const GEMINI_OAUTH_CLIENT_SECRET = 'REMOVED_GOOGLE_OAUTH_CLIENT_SECRET'
+export const GEMINI_OAUTH_CLIENT_ID = ''
+export const GEMINI_OAUTH_CLIENT_SECRET = ''
 export const GEMINI_OAUTH_REDIRECT_URI = 'http://localhost:8085/oauth2callback'
 export const GEMINI_OAUTH_SCOPES = [
   'https://www.googleapis.com/auth/cloud-platform',
