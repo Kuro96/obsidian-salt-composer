@@ -11,6 +11,8 @@ import { ObsidianSetting } from '../../common/ObsidianSetting'
 import { ObsidianTextInput } from '../../common/ObsidianTextInput'
 import { ReactModal } from '../../common/ReactModal'
 
+const ADDABLE_PLAN_PROVIDER_TYPES = new Set(['openai-plan'])
+
 type AddChatModelModalComponentProps = {
   plugin: SmartComposerPlugin
   onClose: () => void
@@ -40,6 +42,11 @@ function AddChatModelModalComponent({
     model: '',
     promptLevel: PromptLevel.Default,
   })
+  const addableProviders = plugin.settings.providers.filter(
+    (provider) =>
+      !provider.type.endsWith('-plan') ||
+      ADDABLE_PLAN_PROVIDER_TYPES.has(provider.type),
+  )
 
   const handleSubmit = async () => {
     if (plugin.settings.chatModels.some((p) => p.id === formData.id)) {
@@ -48,9 +55,7 @@ function AddChatModelModalComponent({
     }
 
     if (
-      !plugin.settings.providers.some(
-        (provider) => provider.id === formData.providerId,
-      )
+      !addableProviders.some((provider) => provider.id === formData.providerId)
     ) {
       new Notice('Provider with this ID does not exist')
       return
@@ -90,15 +95,10 @@ function AddChatModelModalComponent({
         <ObsidianDropdown
           value={formData.providerId}
           options={Object.fromEntries(
-            plugin.settings.providers.map((provider) => [
-              provider.id,
-              provider.id,
-            ]),
+            addableProviders.map((provider) => [provider.id, provider.id]),
           )}
           onChange={(value: string) => {
-            const provider = plugin.settings.providers.find(
-              (p) => p.id === value,
-            )
+            const provider = addableProviders.find((p) => p.id === value)
             if (!provider) {
               new Notice(`Provider with ID ${value} not found`)
               return
