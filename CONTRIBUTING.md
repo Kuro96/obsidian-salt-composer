@@ -1,19 +1,19 @@
-# Contributing to Obsidian Salt Composer
+# Contributing to Salt Composer
 
-We welcome contributions to Obsidian Salt Composer. Thanks for helping improve the project.
+We welcome contributions to Salt Composer, the public fork maintained at `Kuro96/obsidian-salt-composer`. Thanks for helping improve the project.
 
 ## Development Workflow
 
 1. Clone the repository into your Obsidian vault's plugins directory:
 
    ```
-   git clone https://github.com/Kuro96/obsidian-salt-composer.git /path/to/your/vault/.obsidian/plugins/obsidian-salt-composer
+   git clone https://github.com/Kuro96/obsidian-salt-composer.git /path/to/your/vault/.obsidian/plugins/salt-composer
    ```
 
 2. Move into the plugin directory:
 
    ```
-   cd /path/to/your/vault/.obsidian/plugins/obsidian-salt-composer
+   cd /path/to/your/vault/.obsidian/plugins/salt-composer
    ```
 
 3. Install dependencies and start the dev server:
@@ -52,9 +52,9 @@ Before sending a PR:
 1. Fork or branch from `main`.
 2. Run `npm install`.
 3. Add tests when needed.
-4. Ensure `npm test` passes.
-5. Check `npm run type:check`.
-6. Check `npm run lint:check`.
+4. Check `npm run type:check`.
+5. Check `npm run lint:check`.
+6. Ensure `npm test` passes.
 
 ## Development Issues and Solutions
 
@@ -69,4 +69,4 @@ This project is licensed under the [GNU General Public License v3.0](LICENSE). C
 
 ## Deployment (Maintainers Only)
 
-Releases are tag-driven. Create and push a tag such as `v1.2.3`, and the release workflow will build the plugin, publish the release, and open a version-bump PR to `main`.
+Releases are tag-driven. Create and push a bare semver tag such as `1.2.3`, and the release workflow will build the plugin, publish the release, and open a version-bump PR to `main`.

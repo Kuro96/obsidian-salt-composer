@@ -12,24 +12,11 @@
 > Salt Composer is a standalone public fork of [glowingjade/obsidian-smart-composer](https://github.com/glowingjade/obsidian-smart-composer).
 > Huge thanks to Heesu Suh, the glowingjade project, and every contributor who built the original Smart Composer.
 
-> [!NOTE]
-> **What's New**
->
-> **v1.2.8** — OpenAI subscription connect for Codex usage
->
-> **v1.2.7** — Connect your OpenAI account directly (no API key required)
->
-> **v1.2.6** — Support for GPT-5.2, Opus 4.5, Gemini 3, and Grok 4.1
->
-> **🔌 MCP Support** — Connect Salt Composer to external tools and data sources via the [Model Context Protocol](https://modelcontextprotocol.io)
-
 > ### OpenAI subscription connect
 >
 > Salt Composer only exposes subscription connect for OpenAI (ChatGPT/Codex). Claude and Gemini remain available through normal API-key provider setup.
 >
 > Subscription connect uses an OAuth-style flow and is not the same as official API-key access. Use it for personal, interactive sessions and use API keys for provider billing or automation.
-
-![SC1_Title.gif](https://github.com/user-attachments/assets/a50a1f80-39ff-4eba-8090-e3d75e7be98c)
 
 Salt Composer helps you write efficiently with AI by referencing your vault content directly inside Obsidian. Inspired by Cursor AI and ChatGPT Canvas, it keeps note-taking and content creation in one place.
 
@@ -67,16 +54,12 @@ Connect Salt Composer to external MCP servers and use third-party tools and data
 
 ## Getting Started
 
-1. Open Obsidian Settings
-2. Go to "Community plugins" and click "Browse"
-3. Search for "Salt Composer" and install it
-4. Enable the plugin
-5. Configure Salt Composer in plugin settings
+1. Download the latest release from this repository.
+2. Copy `main.js`, `manifest.json`, and `styles.css` into `.obsidian/plugins/salt-composer/` in your vault.
+3. Open Obsidian Settings, go to Community plugins, and enable Salt Composer.
+4. Configure providers, subscription connect, MCP servers, and tool approval policy in Salt Composer settings.
 
-> [!TIP]
-> Gemini API is currently the strongest free option for Salt Composer.
-
-For setup details, visit the [repository](https://github.com/Kuro96/obsidian-salt-composer).
+For contributor setup, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
@@ -102,6 +85,10 @@ The original Smart Composer core contributors were instrumental in the project's
 
 Thank you to everyone who has contributed to Smart Composer and Salt Composer.
 
+## Fork Notice
+
+Salt Composer is distributed as an independent fork. User-facing documentation, release tracking, issues, and discussions for this fork live in this repository. Historical upstream attribution is preserved here and in [NOTICE](NOTICE).
+
 ## License
 
 Salt Composer is licensed under the [GNU General Public License v3.0](LICENSE).
@@ -111,9 +98,3 @@ The original Smart Composer MIT license notice is preserved in [NOTICE](NOTICE).
 ## Acknowledgements
 
 Salt Composer builds on the original Smart Composer project. If you want to support the upstream authors, see the original project's support links and updates from [@andy_suh_](https://x.com/andy_suh_).
-
-For Salt Composer updates, watch or star this repository.
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=Kuro96/obsidian-salt-composer&type=Date)](https://star-history.com/#Kuro96/obsidian-salt-composer&Date)
