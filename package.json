@@ -14,8 +14,23 @@
     "diagnose:chat-storage": "node scripts/diagnose-chat-storage.js",
     "migrate:compile": "node compile-migration.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "obsidian",
+    "obsidian-plugin",
+    "ai",
+    "mcp",
+    "rag",
+    "salt-composer"
+  ],
+  "author": "Kuro96",
+  "homepage": "https://github.com/Kuro96/obsidian-salt-composer#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kuro96/obsidian-salt-composer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Kuro96/obsidian-salt-composer/issues"
+  },
   "license": "GPL-3.0-only",
   "devDependencies": {
     "@types/jest": "^29.5.13",
