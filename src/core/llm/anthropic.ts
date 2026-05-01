@@ -109,7 +109,7 @@ export class AnthropicProvider extends BaseLLMProvider<
     } catch (error) {
       if (error instanceof Anthropic.AuthenticationError) {
         // Anthropic's CORS Policy Change (March 2025)
-        // Issue: https://github.com/glowingjade/obsidian-smart-composer/issues/286
+        // Original upstream issue: https://github.com/glowingjade/obsidian-smart-composer/issues/286
         //
         // Anthropic recently changed their CORS policy for new individual accounts:
         // - New individual accounts now have CORS restrictions by default
@@ -131,7 +131,7 @@ To resolve this issue:
 2. Create a new organization
 3. Your API key should work properly after creating an organization
 
-For more information, please refer to the following issue:
+For background, please refer to the original upstream issue:
 https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
             error,
           )
@@ -204,7 +204,7 @@ https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
     } catch (error) {
       if (error instanceof Anthropic.AuthenticationError) {
         // Anthropic's CORS Policy Change (March 2025)
-        // Issue: https://github.com/glowingjade/obsidian-smart-composer/issues/286
+        // Original upstream issue: https://github.com/glowingjade/obsidian-smart-composer/issues/286
         //
         // Anthropic recently changed their CORS policy for new individual accounts:
         // - New individual accounts now have CORS restrictions by default
@@ -226,7 +226,7 @@ To resolve this issue:
 2. Create a new organization
 3. Your API key should work properly after creating an organization
 
-For more information, please refer to the following issue:
+For background, please refer to the original upstream issue:
 https://github.com/glowingjade/obsidian-smart-composer/issues/286`,
             error,
           )

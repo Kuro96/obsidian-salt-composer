@@ -26,7 +26,7 @@ export function SettingsTabRoot({ app, plugin }: SettingsTabRootProps) {
         name="Support Salt Composer"
         desc="If you find Salt Composer valuable, visit the fork on GitHub for updates and support."
         heading
-        className="smtcmp-settings-support-smart-composer"
+        className="smtcmp-settings-support-salt-composer"
       >
         <ObsidianButton
           text="Open GitHub Repo"
