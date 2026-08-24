@@ -254,8 +254,10 @@
   height: var(--size-4-4);
 
   .smtcmp-chat-user-input-controls__model-select-container {
-    flex-shrink: 1;
+    flex: 1 1 0;
     overflow: hidden;
+    min-width: 0;
+    container-type: inline-size;
   }
 
   .smtcmp-chat-user-input-controls__buttons {
@@ -464,6 +466,22 @@
 
 .smtcmp-popover li:hover {
   background-color: var(--background-modifier-hover);
+}
+
+.smtcmp-popover li[data-highlighted],
+.smtcmp-popover li[data-state='checked'] {
+  background-color: var(--background-modifier-hover);
+}
+
+.smtcmp-popover-radio-indicator {
+  display: flex;
+  width: 12px;
+  color: var(--interactive-accent);
+  visibility: hidden;
+}
+
+.smtcmp-popover li[data-state='checked'] .smtcmp-popover-radio-indicator {
+  visibility: visible;
 }
 
 .smtcmp-popover-item-icon {
@@ -792,6 +810,12 @@ button.smtcmp-chat-input-model-select {
     color: var(--text-normal) !important;
   }
 
+  &:focus-visible {
+    color: var(--text-normal) !important;
+    outline: 1px solid var(--interactive-accent);
+    outline-offset: 2px;
+  }
+
   .smtcmp-chat-input-model-select__model-name {
     flex-shrink: 1;
     overflow: hidden;
@@ -804,6 +828,53 @@ button.smtcmp-chat-input-model-select {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+}
+
+.smtcmp-chat-input-model-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  min-width: 0;
+
+  > [data-radix-collection-item],
+  > button {
+    flex-shrink: 0;
+  }
+
+  > :first-child {
+    min-width: 0;
+    flex-shrink: 1;
+  }
+}
+
+button.smtcmp-chat-input-fast-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--size-2-1);
+  min-width: 24px;
+  min-height: 24px;
+
+  &[aria-pressed='true'] {
+    color: var(--interactive-accent) !important;
+  }
+}
+
+@container (max-width: 260px) {
+  .smtcmp-chat-input-effort-select__prefix,
+  .smtcmp-chat-input-fast-toggle span {
+    display: none;
+  }
+}
+
+@container (max-width: 150px) {
+  .smtcmp-chat-input-model-controls > :first-child {
+    min-width: 24px;
+  }
+
+  button.smtcmp-chat-input-fast-toggle {
+    display: none;
   }
 }
 

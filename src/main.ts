@@ -30,6 +30,7 @@ export default class SmartComposerPlugin extends Plugin {
   ragEngine: RAGEngine | null = null
   private dbManagerInitPromise: Promise<DatabaseManager> | null = null
   private ragEngineInitPromise: Promise<RAGEngine> | null = null
+  private settingsSavePromise: Promise<void> = Promise.resolve()
   private timeoutIds: ReturnType<typeof setTimeout>[] = [] // Use ReturnType instead of number
 
   async onload() {
@@ -181,9 +182,12 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
     }
 
     this.settings = newSettings
-    await this.saveData(newSettings)
     this.ragEngine?.setSettings(newSettings)
     this.settingsChangeListeners.forEach((listener) => listener(newSettings))
+    this.settingsSavePromise = this.settingsSavePromise
+      .catch(() => undefined)
+      .then(() => this.saveData(newSettings))
+    await this.settingsSavePromise
   }
 
   addSettingsChangeListener(
