@@ -44,6 +44,10 @@ export type DefaultChatModels = {
   providerId: string
   model: string
   reasoning_effort?: string
+  reasoning?: {
+    reasoning_effort?: string
+    reasoning_summary?: string
+  }
   thinking?: {
     budget_tokens: number
   }

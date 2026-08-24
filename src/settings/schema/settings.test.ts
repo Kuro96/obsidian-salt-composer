@@ -57,14 +57,14 @@ describe('parseSmartComposerSettings', () => {
     })
   })
 
-  it('should coerce version 19 settings back to schema version 18', () => {
+  it('should coerce future settings back to the current schema version', () => {
     const result = parseSmartComposerSettings({
-      version: 19,
+      version: 20,
       systemPrompt: 'test prompt',
     })
 
     expect(result.version).toBe(SETTINGS_SCHEMA_VERSION)
-    expect(result.version).toBe(18)
+    expect(result.version).toBe(19)
     expect(result.vaultChatEnabled).toBe(true)
     expect(result.agents.directoryName).toBe('.agents')
     expect(result).not.toHaveProperty('systemPrompt')

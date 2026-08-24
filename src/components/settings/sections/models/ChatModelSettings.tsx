@@ -145,6 +145,25 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
       const [reasoningSummary, setReasoningSummary] = useState<string>(
         typedModel.reasoning?.reasoning_summary ?? '',
       )
+      const reasoningEffortOptions: Record<string, string> =
+        typedModel.model.startsWith('gpt-5.6-')
+          ? {
+              '': 'Not set (OpenAI default)',
+              low: 'low',
+              medium: 'medium',
+              high: 'high',
+              xhigh: 'xhigh',
+              max: 'max',
+            }
+          : {
+              '': 'Not set (OpenAI default)',
+              none: 'none',
+              minimal: 'minimal',
+              low: 'low',
+              medium: 'medium',
+              high: 'high',
+              xhigh: 'xhigh',
+            }
 
       const handleSubmit = async () => {
         const updatedReasoning = {
@@ -185,15 +204,7 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
           >
             <ObsidianDropdown
               value={reasoningEffort}
-              options={{
-                '': 'Not set (OpenAI default)',
-                none: 'none',
-                minimal: 'minimal',
-                low: 'low',
-                medium: 'medium',
-                high: 'high',
-                xhigh: 'xhigh',
-              }}
+              options={reasoningEffortOptions}
               onChange={(value: string) => setReasoningEffort(value)}
             />
           </ObsidianSetting>

@@ -24,6 +24,30 @@ import {
   shouldUseObsidianRequestUrlNetworkStack,
 } from './transportPolicy'
 
+const GPT_5_6_FAST_MODEL_PATTERN = /^(gpt-5\.6-(?:sol|terra|luna))-fast$/
+
+export function resolveCodexModel(model: string): {
+  model: string
+  serviceTier?: 'priority'
+} {
+  const fastModelMatch = GPT_5_6_FAST_MODEL_PATTERN.exec(model)
+  return fastModelMatch
+    ? { model: fastModelMatch[1], serviceTier: 'priority' }
+    : { model }
+}
+
+export function buildCodexRequestHeaders(
+  accessToken: string,
+  accountId?: string,
+): Record<string, string> {
+  return {
+    Accept: 'text/event-stream',
+    authorization: `Bearer ${accessToken}`,
+    originator: 'obsidian-salt-composer',
+    ...(accountId ? { 'ChatGPT-Account-Id': accountId } : {}),
+  }
+}
+
 export class OpenAICodexProvider extends BaseLLMProvider<
   Extract<LLMProvider, { type: 'openai-plan' }>
 > {
@@ -125,15 +149,10 @@ export class OpenAICodexProvider extends BaseLLMProvider<
       }
     }
 
-    const headers: Record<string, string> = {
-      authorization: `Bearer ${this.provider.oauth.accessToken}`,
-    }
-
-    if (this.provider.oauth.accountId) {
-      headers['ChatGPT-Account-Id'] = this.provider.oauth.accountId
-    }
-
-    return headers
+    return buildCodexRequestHeaders(
+      this.provider.oauth.accessToken,
+      this.provider.oauth.accountId,
+    )
   }
 
   private normalizeRequest<
@@ -141,8 +160,11 @@ export class OpenAICodexProvider extends BaseLLMProvider<
   >(model: Extract<ChatModel, { providerType: 'openai-plan' }>, request: T): T {
     const reasoningEffort = model.reasoning?.reasoning_effort
     const reasoningSummary = model.reasoning?.reasoning_summary
+    const resolvedModel = resolveCodexModel(model.model)
     return {
       ...request,
+      model: resolvedModel.model,
+      service_tier: resolvedModel.serviceTier,
       reasoning_effort: reasoningEffort
         ? (reasoningEffort as ReasoningEffort)
         : undefined,

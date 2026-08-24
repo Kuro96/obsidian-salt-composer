@@ -30,6 +30,7 @@ export type LLMRequestBase = {
   // Only available for OpenAI reasoning models
   reasoning_effort?: ReasoningEffort
   reasoning_summary?: Reasoning['summary']
+  service_tier?: ChatCompletionCreateParams['service_tier']
 
   // Only available for OpenAI search models and Perplexity
   web_search_options?: ChatCompletionCreateParams.WebSearchOptions

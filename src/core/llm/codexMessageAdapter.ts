@@ -429,6 +429,7 @@ export class CodexMessageAdapter {
       stream,
       tools,
       tool_choice: normalizeToolChoice(request.tool_choice),
+      service_tier: request.service_tier,
       ...(reasoning && {
         reasoning,
       }),

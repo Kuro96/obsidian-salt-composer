@@ -16,7 +16,7 @@ export const CODEX_RESPONSES_ENDPOINT =
   'https://chatgpt.com/backend-api/codex/responses'
 
 // Default model ids
-export const DEFAULT_CHAT_MODEL_ID = 'gpt-5.5 (plan)'
+export const DEFAULT_CHAT_MODEL_ID = 'gpt-5.6-sol (plan)'
 
 // Recommended model ids
 export const RECOMMENDED_MODELS_FOR_CHAT: readonly string[] = []
@@ -233,6 +233,66 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
  * 2. If there's same model id in user's settings, it's data should be overwritten by default model
  */
 export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
+  {
+    providerType: 'openai-plan',
+    providerId: PROVIDER_TYPES_INFO['openai-plan'].defaultProviderId,
+    id: 'gpt-5.6-sol (plan)',
+    model: 'gpt-5.6-sol',
+    reasoning: {
+      reasoning_effort: 'low',
+      reasoning_summary: 'auto',
+    },
+  },
+  {
+    providerType: 'openai-plan',
+    providerId: PROVIDER_TYPES_INFO['openai-plan'].defaultProviderId,
+    id: 'gpt-5.6-sol-fast (plan)',
+    model: 'gpt-5.6-sol-fast',
+    reasoning: {
+      reasoning_effort: 'low',
+      reasoning_summary: 'auto',
+    },
+  },
+  {
+    providerType: 'openai-plan',
+    providerId: PROVIDER_TYPES_INFO['openai-plan'].defaultProviderId,
+    id: 'gpt-5.6-terra (plan)',
+    model: 'gpt-5.6-terra',
+    reasoning: {
+      reasoning_effort: 'medium',
+      reasoning_summary: 'auto',
+    },
+  },
+  {
+    providerType: 'openai-plan',
+    providerId: PROVIDER_TYPES_INFO['openai-plan'].defaultProviderId,
+    id: 'gpt-5.6-terra-fast (plan)',
+    model: 'gpt-5.6-terra-fast',
+    reasoning: {
+      reasoning_effort: 'medium',
+      reasoning_summary: 'auto',
+    },
+  },
+  {
+    providerType: 'openai-plan',
+    providerId: PROVIDER_TYPES_INFO['openai-plan'].defaultProviderId,
+    id: 'gpt-5.6-luna (plan)',
+    model: 'gpt-5.6-luna',
+    reasoning: {
+      reasoning_effort: 'medium',
+      reasoning_summary: 'auto',
+    },
+  },
+  {
+    providerType: 'openai-plan',
+    providerId: PROVIDER_TYPES_INFO['openai-plan'].defaultProviderId,
+    id: 'gpt-5.6-luna-fast (plan)',
+    model: 'gpt-5.6-luna-fast',
+    reasoning: {
+      reasoning_effort: 'medium',
+      reasoning_summary: 'auto',
+    },
+  },
   {
     providerType: 'openai-plan',
     providerId: PROVIDER_TYPES_INFO['openai-plan'].defaultProviderId,
