@@ -34,6 +34,9 @@ jobs:
       - name: Build plugin
         run: |
           npm ci
+          npm run type:check
+          npm run lint:check
+          npm test
           npm run build
 
       - name: Create release

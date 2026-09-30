@@ -16,7 +16,7 @@ We welcome contributions to Salt Composer, the public fork maintained at `Kuro96
    cd /path/to/your/vault/.obsidian/plugins/salt-composer
    ```
 
-3. Install dependencies and start the dev server:
+3. Install dependencies and start the bundle watcher:
 
    ```
    npm install
@@ -69,4 +69,4 @@ This project is licensed under the [GNU General Public License v3.0](LICENSE). C
 
 ## Deployment (Maintainers Only)
 
-Releases are tag-driven. Create and push a bare semver tag such as `1.2.3`, and the release workflow will build the plugin, publish the release, and open a version-bump PR to `main`.
+Releases are tag-driven. Create and push a bare semver tag such as `1.2.3`. The release workflow runs the same type, lint, and test checks as CI, builds the plugin, then publishes the release and opens a version-bump PR to `main`.
