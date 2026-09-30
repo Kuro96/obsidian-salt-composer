@@ -3,6 +3,7 @@ import { useState } from 'react'
 
 import SmartComposerPlugin from '../../../../main'
 import { ChatModel, chatModelSchema } from '../../../../types/chat-model.types'
+import { getCodexFastModelPair } from '../../../chat-view/chat-input/modelOptions'
 import { ObsidianButton } from '../../../common/ObsidianButton'
 import { ObsidianDropdown } from '../../../common/ObsidianDropdown'
 import { ObsidianSetting } from '../../../common/ObsidianSetting'
@@ -189,10 +190,24 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
           return
         }
 
+        const pair = getCodexFastModelPair(plugin.settings.chatModels, model)
         await plugin.setSettings({
           ...plugin.settings,
           chatModels: plugin.settings.chatModels.map((m) =>
-            m.id === model.id ? updatedModel : m,
+            m.id === model.id
+              ? updatedModel
+              : pair &&
+                  (m.id === pair.normal.id || m.id === pair.fast.id) &&
+                  m.providerType === 'openai-plan'
+                ? {
+                    ...m,
+                    reasoning: {
+                      ...m.reasoning,
+                      reasoning_effort:
+                        updatedModel.reasoning?.reasoning_effort,
+                    },
+                  }
+                : m,
           ),
         })
         onClose()

@@ -103,8 +103,9 @@ export function McpSection({ app, plugin }: McpSectionProps) {
             desktop to manage external MCP servers.
           </div>
         </div>
-      ) : (
-        <div className="smtcmp-mcp-panel-grid">
+      ) : null}
+      <div className="smtcmp-mcp-panel-grid">
+        {!mcpManager?.externalServersDisabled && (
           <section className="smtcmp-mcp-panel smtcmp-mcp-panel--servers">
             <div className="smtcmp-settings-sub-header-container smtcmp-mcp-panel-header">
               <div>
@@ -153,32 +154,32 @@ export function McpSection({ app, plugin }: McpSectionProps) {
               )}
             </div>
           </section>
+        )}
 
-          <section className="smtcmp-mcp-panel smtcmp-mcp-panel--builtin">
-            <div className="smtcmp-mcp-panel-header smtcmp-settings-sub-header-container">
-              <div>
-                <div className="smtcmp-settings-sub-header">
-                  Built-in Vault Tools
-                </div>
-                <div className="smtcmp-settings-desc smtcmp-mcp-panel-desc">
-                  Built-in tools bundled with Salt Composer. These are runtime
-                  capabilities, not per-server installs.
-                </div>
+        <section className="smtcmp-mcp-panel smtcmp-mcp-panel--builtin">
+          <div className="smtcmp-mcp-panel-header smtcmp-settings-sub-header-container">
+            <div>
+              <div className="smtcmp-settings-sub-header">
+                Built-in Vault Tools
+              </div>
+              <div className="smtcmp-settings-desc smtcmp-mcp-panel-desc">
+                Built-in tools bundled with Salt Composer. These are runtime
+                capabilities, not per-server installs.
               </div>
             </div>
+          </div>
 
-            {builtInTools.length > 0 ? (
-              <McpBuiltInWorkbench tools={builtInTools} />
-            ) : (
-              <div className="smtcmp-mcp-servers-empty">
-                <div className="smtcmp-mcp-servers-empty-title">
-                  No built-in tools available
-                </div>
+          {builtInTools.length > 0 ? (
+            <McpBuiltInWorkbench tools={builtInTools} />
+          ) : (
+            <div className="smtcmp-mcp-servers-empty">
+              <div className="smtcmp-mcp-servers-empty-title">
+                No built-in tools available
               </div>
-            )}
-          </section>
-        </div>
-      )}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   )
 }
