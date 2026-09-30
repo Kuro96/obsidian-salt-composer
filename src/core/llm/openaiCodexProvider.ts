@@ -24,7 +24,8 @@ import {
   shouldUseObsidianRequestUrlNetworkStack,
 } from './transportPolicy'
 
-const CODEX_FAST_MODEL_PATTERN = /^(gpt-6(?:\.1)?-(?:sol|terra|luna))-fast$/
+const CODEX_FAST_MODEL_PATTERN =
+  /^(gpt-6-(?:astra|sol|luna)|gpt-6\.1-sol)-fast$/
 
 export function resolveCodexModel(model: string): {
   model: string

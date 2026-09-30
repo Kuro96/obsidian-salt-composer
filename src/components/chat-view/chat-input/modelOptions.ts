@@ -1,7 +1,8 @@
 import { ChatModel } from '../../../types/chat-model.types'
 
-const GPT_5_6_MODEL_PATTERN = /^(gpt-5\.6-(?:sol|terra|luna))(?:-fast)?$/
-const GPT_5_6_REASONING_EFFORTS = [
+const CODEX_MODEL_PATTERN =
+  /^(gpt-6-(?:astra|sol|luna)|gpt-6\.1-sol)(?:-fast)?$/
+const CURRENT_CODEX_REASONING_EFFORTS = [
   'low',
   'medium',
   'high',
@@ -19,7 +20,7 @@ const CODEX_REASONING_EFFORTS = [
 const OPENAI_REASONING_EFFORTS = ['low', 'medium', 'high'] as const
 
 export type ReasoningEffortOption =
-  | (typeof GPT_5_6_REASONING_EFFORTS)[number]
+  | (typeof CURRENT_CODEX_REASONING_EFFORTS)[number]
   | (typeof CODEX_REASONING_EFFORTS)[number]
   | (typeof OPENAI_REASONING_EFFORTS)[number]
 
@@ -27,8 +28,8 @@ export function getReasoningEffortOptions(
   model: ChatModel,
 ): readonly ReasoningEffortOption[] {
   if (model.providerType === 'openai-plan') {
-    return GPT_5_6_MODEL_PATTERN.test(model.model)
-      ? GPT_5_6_REASONING_EFFORTS
+    return CODEX_MODEL_PATTERN.test(model.model)
+      ? CURRENT_CODEX_REASONING_EFFORTS
       : CODEX_REASONING_EFFORTS
   }
   if (model.providerType === 'openai' && model.reasoning?.enabled) {
@@ -42,7 +43,7 @@ export function getCodexFastModelName(
   enabled: boolean,
 ): string | undefined {
   if (model.providerType !== 'openai-plan') return undefined
-  const match = GPT_5_6_MODEL_PATTERN.exec(model.model)
+  const match = CODEX_MODEL_PATTERN.exec(model.model)
   if (!match) return undefined
   return `${match[1]}${enabled ? '-fast' : ''}`
 }

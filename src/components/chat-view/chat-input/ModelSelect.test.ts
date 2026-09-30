@@ -14,20 +14,24 @@ const planModel = (model: string): ChatModel => ({
 })
 
 describe('ModelSelect model options', () => {
-  it.each(['sol', 'terra', 'luna'])(
-    'should expose GPT-5.6 %s reasoning efforts',
-    (submodel) => {
-      expect(
-        getReasoningEffortOptions(planModel(`gpt-5.6-${submodel}`)),
-      ).toEqual(['low', 'medium', 'high', 'xhigh', 'max'])
+  it.each(['gpt-6-astra', 'gpt-6-sol', 'gpt-6-luna', 'gpt-6.1-sol'])(
+    'should expose %s reasoning efforts',
+    (model) => {
+      expect(getReasoningEffortOptions(planModel(model))).toEqual([
+        'low',
+        'medium',
+        'high',
+        'xhigh',
+        'max',
+      ])
     },
   )
 
-  it('should resolve normal and fast GPT-5.6 model names', () => {
-    const model = planModel('gpt-5.6-terra-fast')
+  it('should resolve normal and fast Astra model names', () => {
+    const model = planModel('gpt-6-astra-fast')
 
-    expect(getCodexFastModelName(model, false)).toBe('gpt-5.6-terra')
-    expect(getCodexFastModelName(model, true)).toBe('gpt-5.6-terra-fast')
+    expect(getCodexFastModelName(model, false)).toBe('gpt-6-astra')
+    expect(getCodexFastModelName(model, true)).toBe('gpt-6-astra-fast')
   })
 
   it('should not expose Fast mode for unrelated models', () => {
@@ -35,8 +39,8 @@ describe('ModelSelect model options', () => {
   })
 
   it('should pair one normal and one fast model', () => {
-    const normal = planModel('gpt-5.6-sol')
-    const fast = planModel('gpt-5.6-sol-fast')
+    const normal = planModel('gpt-6.1-sol')
+    const fast = planModel('gpt-6.1-sol-fast')
 
     expect(getCodexFastModelPair([normal, fast], normal)).toEqual({
       normal,
@@ -45,9 +49,9 @@ describe('ModelSelect model options', () => {
   })
 
   it('should reject ambiguous Fast model pairs', () => {
-    const normal = planModel('gpt-5.6-sol')
+    const normal = planModel('gpt-6.1-sol')
     const duplicateNormal = { ...normal, id: 'custom-sol' }
-    const fast = planModel('gpt-5.6-sol-fast')
+    const fast = planModel('gpt-6.1-sol-fast')
 
     expect(
       getCodexFastModelPair([normal, duplicateNormal, fast], normal),

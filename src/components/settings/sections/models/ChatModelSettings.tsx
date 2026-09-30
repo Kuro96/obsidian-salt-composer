@@ -146,7 +146,9 @@ const MODEL_SETTINGS_REGISTRY: ModelSettingsRegistry[] = [
         typedModel.reasoning?.reasoning_summary ?? '',
       )
       const reasoningEffortOptions: Record<string, string> =
-        typedModel.model.startsWith('gpt-5.6-')
+        /^(gpt-6-(?:astra|sol|luna)|gpt-6\.1-sol)(?:-fast)?$/.test(
+          typedModel.model,
+        )
           ? {
               '': 'Not set (OpenAI default)',
               low: 'low',

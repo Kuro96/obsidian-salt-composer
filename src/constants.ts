@@ -232,23 +232,25 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
  * 1. When adding new default model, settings migration should be added
  * 2. If there's same model id in user's settings, it's data should be overwritten by default model
  */
-export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = ['6.1', '6'].flatMap(
-  (version) =>
-    ['sol', 'terra', 'luna'].flatMap((submodel) =>
-      ['', '-fast'].map((suffix): ChatModel => {
-        const model = `gpt-${version}-${submodel}${suffix}`
-        return {
-          providerType: 'openai-plan',
-          providerId: PROVIDER_TYPES_INFO['openai-plan'].defaultProviderId,
-          id: `${model} (plan)`,
-          model,
-          reasoning: {
-            reasoning_effort: submodel === 'sol' ? 'low' : 'medium',
-            reasoning_summary: 'auto',
-          },
-        }
-      }),
-    ),
+export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
+  'gpt-6.1-sol',
+  'gpt-6-astra',
+  'gpt-6-sol',
+  'gpt-6-luna',
+].flatMap((baseModel) =>
+  ['', '-fast'].map((suffix): ChatModel => {
+    const model = `${baseModel}${suffix}`
+    return {
+      providerType: 'openai-plan',
+      providerId: PROVIDER_TYPES_INFO['openai-plan'].defaultProviderId,
+      id: `${model} (plan)`,
+      model,
+      reasoning: {
+        reasoning_effort: baseModel === 'gpt-6-astra' ? 'medium' : 'high',
+        reasoning_summary: 'auto',
+      },
+    }
+  }),
 )
 
 /**

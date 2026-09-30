@@ -10,16 +10,15 @@ import {
 } from './openaiCodexProvider'
 
 describe('OpenAI Codex GPT-6 and GPT-6.1 models', () => {
-  it.each(
-    ['6', '6.1'].flatMap((version) =>
-      ['sol', 'terra', 'luna'].map((submodel) => `gpt-${version}-${submodel}`),
-    ),
-  )('should map the %s fast model to priority service tier', (model) => {
-    expect(resolveCodexModel(`${model}-fast`)).toEqual({
-      model,
-      serviceTier: 'priority',
-    })
-  })
+  it.each(['gpt-6-astra', 'gpt-6-sol', 'gpt-6-luna', 'gpt-6.1-sol'])(
+    'should map the %s fast model to priority service tier',
+    (model) => {
+      expect(resolveCodexModel(`${model}-fast`)).toEqual({
+        model,
+        serviceTier: 'priority',
+      })
+    },
+  )
 
   it('should preserve a normal model without a service tier', () => {
     expect(resolveCodexModel('gpt-6.1-sol')).toEqual({ model: 'gpt-6.1-sol' })

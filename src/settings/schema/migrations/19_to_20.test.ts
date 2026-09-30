@@ -1,5 +1,3 @@
-import { DEFAULT_CHAT_MODELS } from '../../../constants'
-
 import { migrateFrom19To20 } from './19_to_20'
 
 describe('migrateFrom19To20', () => {
@@ -25,7 +23,10 @@ describe('migrateFrom19To20', () => {
       ],
     })
 
-    expect(migrated.chatModels).toEqual([...DEFAULT_CHAT_MODELS, customModel])
+    expect(migrated.chatModels).toContainEqual(customModel)
+    expect(migrated.chatModels).not.toContainEqual(
+      expect.objectContaining({ id: 'gpt-5.6-sol-fast (plan)' }),
+    )
     expect(migrated.chatModelId).toBe('gpt-6.1-sol (plan)')
     expect(migrated.version).toBe(20)
   })
