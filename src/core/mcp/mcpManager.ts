@@ -1,7 +1,5 @@
-import * as path from 'path'
-
 import isEqual from 'lodash.isequal'
-import { App, Platform, TFile } from 'obsidian'
+import { App, Platform } from 'obsidian'
 
 import { SmartComposerSettings } from '../../settings/schema/setting.types'
 import {
@@ -33,6 +31,7 @@ import {
 } from './builtin-tool-tiers'
 import { McpNotAvailableException } from './exception'
 import {
+  DEFAULT_DELIMITER,
   getToolName,
   parseToolName,
   validateServerName,
@@ -42,7 +41,7 @@ export type SessionMode = 'read-only' | 'read-write'
 export type { BuiltinToolTier }
 
 export class McpManager {
-  static readonly TOOL_NAME_DELIMITER = '__' // Delimiter for tool name construction (serverName__toolName)
+  static readonly TOOL_NAME_DELIMITER = DEFAULT_DELIMITER
   static readonly VAULT_LIST_TOOL = 'vault_list'
   static readonly VAULT_READ_TOOL = 'vault_read'
   static readonly VAULT_WRITE_TOOL = 'vault_write'
@@ -144,6 +143,7 @@ export class McpManager {
 
     this.servers = []
     this.subscribers.clear()
+    this.activeToolCalls.forEach((controller) => controller.abort())
     this.activeToolCalls.clear()
   }
 
@@ -374,9 +374,14 @@ export class McpManager {
     tools: McpTool[],
     sessionMode: SessionMode,
   ): McpTool[] {
-    if (sessionMode === 'read-write') return [...tools]
+    const enabledTools = tools.filter(
+      (tool) =>
+        getBuiltinToolTier(tool.name) === null ||
+        this.settings.mcp.builtin?.toolOptions?.[tool.name]?.enabled !== false,
+    )
+    if (sessionMode === 'read-write') return enabledTools
     // read-only: remove built-in read-write and danger-zone tools
-    return tools.filter((tool) => {
+    return enabledTools.filter((tool) => {
       const tier = getBuiltinToolTier(tool.name)
       if (tier === null) return true // non-built-in MCP server tools are kept
       return tier === 'read-only'
@@ -384,6 +389,10 @@ export class McpManager {
   }
 
   public listBuiltInTools(): McpTool[] {
+    return this.createBuiltinRegistry().list()
+  }
+
+  private createBuiltinRegistry(): ToolRegistryImpl {
     const registry = new ToolRegistryImpl()
     new VaultToolPack(this.app).registerAll(registry)
     new WorkspaceToolPack(this.app).registerAll(registry)
@@ -391,7 +400,7 @@ export class McpManager {
     new SearchToolPack(this.app).registerAll(registry)
     new MetadataToolPack(this.app).registerAll(registry)
     new WebToolPack().registerAll(registry)
-    return registry.list()
+    return registry
   }
 
   /** Phase 3: 供 SkillToolAdapter / buildToolRegistry 使用 */
@@ -431,21 +440,18 @@ export class McpManager {
       }
     >
   > {
-    const toolAbortController = new AbortController()
-    if (id !== undefined) {
-      const existingAbortController = this.activeToolCalls.get(id)
-      if (existingAbortController) {
-        existingAbortController.abort()
-      }
-      this.activeToolCalls.set(id, toolAbortController)
-    }
+    const toolAbortController = this.createToolAbortController(id)
     const compositeSignal = toolAbortController.signal
-    if (signal) {
-      signal.addEventListener('abort', () => toolAbortController.abort())
-    }
+    const onAbort = () => toolAbortController.abort()
+    if (signal?.aborted) onAbort()
+    else signal?.addEventListener('abort', onAbort, { once: true })
 
     try {
+      if (compositeSignal.aborted)
+        return { status: ToolCallResponseStatus.Aborted }
       if (this.isVaultTool(name)) {
+        if (this.settings.mcp.builtin?.toolOptions?.[name]?.enabled === false)
+          throw new Error(`Tool ${name} is disabled.`)
         const parsedArgs: Record<string, unknown> | undefined =
           typeof args === 'string'
             ? args === ''
@@ -453,6 +459,8 @@ export class McpManager {
               : JSON.parse(args)
             : args
         const out = await this.callVaultTool(name, parsedArgs, compositeSignal)
+        if (compositeSignal.aborted)
+          return { status: ToolCallResponseStatus.Aborted }
         return {
           status: ToolCallResponseStatus.Success,
           data: {
@@ -474,6 +482,8 @@ export class McpManager {
           throw new Error('Skill tool requires a non-empty "name" argument')
         }
         const out = await this.skillManager.execute(skill)
+        if (compositeSignal.aborted)
+          return { status: ToolCallResponseStatus.Aborted }
         return {
           status: ToolCallResponseStatus.Success,
           data: {
@@ -510,6 +520,8 @@ export class McpManager {
           signal: compositeSignal,
         },
       )) as McpToolCallResult
+      if (compositeSignal.aborted)
+        return { status: ToolCallResponseStatus.Aborted }
 
       if (result.content.length === 0) {
         throw new Error('Tool call returned no content')
@@ -533,7 +545,7 @@ export class McpManager {
         },
       }
     } catch (error) {
-      if (error.name === 'AbortError') {
+      if (compositeSignal.aborted || error.name === 'AbortError') {
         return {
           status: ToolCallResponseStatus.Aborted,
         }
@@ -545,10 +557,26 @@ export class McpManager {
         error: error.message || 'Unknown error occurred',
       }
     } finally {
-      if (id !== undefined) {
-        this.activeToolCalls.delete(id)
-      }
+      signal?.removeEventListener('abort', onAbort)
+      this.releaseToolAbortController(id, toolAbortController)
     }
+  }
+
+  public createToolAbortController(id?: string): AbortController {
+    const controller = new AbortController()
+    if (id !== undefined) {
+      this.activeToolCalls.get(id)?.abort()
+      this.activeToolCalls.set(id, controller)
+    }
+    return controller
+  }
+
+  public releaseToolAbortController(
+    id: string | undefined,
+    controller: AbortController,
+  ): void {
+    if (id !== undefined && this.activeToolCalls.get(id) === controller)
+      this.activeToolCalls.delete(id)
   }
 
   public abortToolCall(id: string): boolean {
@@ -588,325 +616,9 @@ export class McpManager {
     args: Record<string, unknown> | undefined,
     signal?: AbortSignal,
   ): Promise<string> {
-    if (name === 'webfetch' || name === 'web_search') {
-      const registry = new ToolRegistryImpl()
-      new WebToolPack().registerAll(registry)
-      const entry = registry.resolve(name)
-      if (!entry) throw new Error(`Unknown web tool: ${name}`)
-      return entry.handler(args ?? {}, { conversationId: '', signal })
-    }
-    const adapter = this.app.vault.adapter as {
-      list: (path: string) => Promise<{ files: string[]; folders: string[] }>
-      read: (path: string) => Promise<string>
-      write: (path: string, data: string) => Promise<void>
-      mkdir: (path: string) => Promise<void>
-      exists?: (path: string, sensitive?: boolean) => Promise<boolean>
-    }
-
-    if (name === McpManager.VAULT_LIST_TOOL) {
-      const relativePath = this.normalizeVaultPath(
-        typeof args?.path === 'string' ? args.path : '',
-      )
-      const listed = await adapter.list(relativePath)
-      return JSON.stringify(
-        {
-          path: relativePath,
-          folders: listed.folders,
-          files: listed.files,
-        },
-        null,
-        2,
-      )
-    }
-
-    if (name === McpManager.VAULT_READ_TOOL) {
-      const rawPath = args?.path
-      if (typeof rawPath !== 'string' || rawPath.trim().length === 0) {
-        throw new Error('vault_read requires a non-empty "path"')
-      }
-      const relativePath = this.normalizeVaultPath(rawPath)
-      const content = await adapter.read(relativePath)
-      return content
-    }
-
-    if (name === McpManager.VAULT_WRITE_TOOL) {
-      const rawPath = args?.path
-      const content = args?.content
-      if (typeof rawPath !== 'string' || rawPath.trim().length === 0) {
-        throw new Error('vault_write requires a non-empty "path"')
-      }
-      if (typeof content !== 'string') {
-        throw new Error('vault_write requires a string "content"')
-      }
-      const relativePath = this.normalizeVaultPath(rawPath)
-      const createDirectories =
-        typeof args?.createDirectories === 'boolean'
-          ? args.createDirectories
-          : true
-
-      if (createDirectories) {
-        await this.ensureParentDirectory(relativePath, adapter)
-      }
-      await adapter.write(relativePath, content)
-      return `Wrote ${content.length} bytes to ${relativePath}`
-    }
-
-    if (name === McpManager.VAULT_EDIT_TOOL) {
-      const rawPath = args?.path
-      const oldText = args?.oldText
-      const newText = args?.newText
-      const replaceAll = args?.replaceAll === true
-
-      if (typeof rawPath !== 'string' || rawPath.trim().length === 0) {
-        throw new Error('vault_edit requires a non-empty "path"')
-      }
-      if (typeof oldText !== 'string' || oldText.length === 0) {
-        throw new Error('vault_edit requires a non-empty string "oldText"')
-      }
-      if (typeof newText !== 'string') {
-        throw new Error('vault_edit requires a string "newText"')
-      }
-
-      const relativePath = this.normalizeVaultPath(rawPath)
-      const original = await adapter.read(relativePath)
-      const occurrences = original.split(oldText).length - 1
-
-      if (occurrences === 0) {
-        throw new Error(`vault_edit could not find oldText in ${relativePath}`)
-      }
-      if (!replaceAll && occurrences !== 1) {
-        throw new Error(
-          `vault_edit found ${occurrences} matches; set replaceAll=true or provide a more specific oldText`,
-        )
-      }
-
-      const next = replaceAll
-        ? original.split(oldText).join(newText)
-        : original.replace(oldText, newText)
-      await adapter.write(relativePath, next)
-      return `Edited ${relativePath}; replaced ${replaceAll ? occurrences : 1} occurrence(s)`
-    }
-
-    if (name === McpManager.VAULT_MKDIR_TOOL) {
-      const rawPath = args?.path
-      if (typeof rawPath !== 'string' || rawPath.trim().length === 0) {
-        throw new Error('vault_mkdir requires a non-empty "path"')
-      }
-      const relativePath = this.normalizeVaultPath(rawPath)
-      await this.mkdirRecursive(relativePath, adapter)
-      return `Created directory ${relativePath}`
-    }
-
-    if (name === McpManager.VAULT_DELETE_TOOL) {
-      const rawPath = args?.path
-      if (typeof rawPath !== 'string' || rawPath.trim().length === 0) {
-        throw new Error('vault_delete requires a non-empty "path"')
-      }
-      const relativePath = this.normalizeVaultPath(rawPath)
-      const target = this.app.vault.getAbstractFileByPath(relativePath)
-      if (!target) {
-        throw new Error(`vault_delete: path not found: ${relativePath}`)
-      }
-      await this.app.vault.trash(target, true)
-      return `Moved to trash: ${relativePath}`
-    }
-
-    if (name === McpManager.COMMANDS_LIST_TOOL) {
-      const commandsMap = (
-        this.app as App & {
-          commands: { commands: Record<string, { id: string; name: string }> }
-        }
-      ).commands.commands
-      const commands = Object.values(commandsMap).map((cmd) => ({
-        id: cmd.id,
-        name: cmd.name,
-      }))
-      return JSON.stringify(commands, null, 2)
-    }
-
-    if (name === McpManager.TAGS_LIST_TOOL) {
-      const includeCounts = args?.includeCounts === true
-      const tagsWithCounts = (
-        this.app.metadataCache as typeof this.app.metadataCache & {
-          getTags: () => Record<string, number>
-        }
-      ).getTags()
-      if (includeCounts) {
-        return JSON.stringify(tagsWithCounts, null, 2)
-      }
-      return JSON.stringify(Object.keys(tagsWithCounts).sort(), null, 2)
-    }
-
-    if (name === McpManager.NOTE_OPEN_TOOL) {
-      const rawPath = args?.path
-      if (typeof rawPath !== 'string' || rawPath.trim().length === 0) {
-        throw new Error('note_open requires a non-empty "path"')
-      }
-      const relativePath = this.normalizeVaultPath(rawPath)
-      const file = this.app.vault.getAbstractFileByPath(relativePath)
-      if (!file || !(file instanceof TFile)) {
-        throw new Error(`note_open: file not found: ${relativePath}`)
-      }
-      const newLeaf = args?.newLeaf === true
-      const line =
-        typeof args?.line === 'number' ? Math.max(1, args.line) : undefined
-      const leaf = newLeaf
-        ? this.app.workspace.getLeaf('tab')
-        : this.app.workspace.getLeaf(false)
-      await leaf.openFile(file, {
-        eState: line !== undefined ? { line: line - 1 } : undefined,
-      })
-      return `Opened ${relativePath}${line !== undefined ? ` at line ${line}` : ''}`
-    }
-
-    if (name === McpManager.VAULT_APPEND_TOOL) {
-      const rawPath = args?.path
-      const content = args?.content
-      if (typeof rawPath !== 'string' || rawPath.trim().length === 0) {
-        throw new Error('vault_append requires a non-empty "path"')
-      }
-      if (typeof content !== 'string') {
-        throw new Error('vault_append requires a string "content"')
-      }
-      const relativePath = this.normalizeVaultPath(rawPath)
-      const createDirectories =
-        typeof args?.createDirectories === 'boolean'
-          ? args.createDirectories
-          : true
-      const ensureTrailingNewline = args?.ensureTrailingNewline === true
-
-      if (createDirectories) {
-        await this.ensureParentDirectory(relativePath, adapter)
-      }
-      const exists = adapter.exists ? await adapter.exists(relativePath) : false
-      let existing = ''
-      if (exists) {
-        existing = await adapter.read(relativePath)
-        if (
-          ensureTrailingNewline &&
-          existing.length > 0 &&
-          !existing.endsWith('\n')
-        ) {
-          existing += '\n'
-        }
-      }
-      await adapter.write(relativePath, existing + content)
-      return `Appended ${content.length} bytes to ${relativePath}`
-    }
-
-    if (name === McpManager.COMMAND_EXECUTE_TOOL) {
-      const commandId = args?.commandId
-      if (typeof commandId !== 'string' || commandId.trim().length === 0) {
-        throw new Error('command_execute requires a non-empty "commandId"')
-      }
-      const commandsObj = (
-        this.app as App & {
-          commands: {
-            commands: Record<string, { id: string; name: string }>
-            executeCommandById: (id: string) => boolean
-          }
-        }
-      ).commands
-      if (!commandsObj.commands[commandId]) {
-        throw new Error(`command_execute: command not found: ${commandId}`)
-      }
-      const executed = commandsObj.executeCommandById(commandId)
-      if (!executed) {
-        throw new Error(
-          `command_execute: command could not be executed: ${commandId}`,
-        )
-      }
-      return `Executed command: ${commandId}`
-    }
-
-    if (name === McpManager.SEARCH_DATAVIEW_TOOL) {
-      const query = args?.query
-      if (typeof query !== 'string' || query.trim().length === 0) {
-        throw new Error('search_dataview requires a non-empty "query"')
-      }
-      const dvPlugin = (
-        this.app as App & {
-          plugins?: { plugins?: Record<string, { api?: unknown }> }
-        }
-      ).plugins?.plugins?.dataview
-      if (!dvPlugin?.api) {
-        throw new Error(
-          'search_dataview: Dataview plugin is not installed or enabled',
-        )
-      }
-      const dv = dvPlugin.api as {
-        query: (q: string) => Promise<{
-          successful: boolean
-          value: unknown
-          error?: string
-        }>
-      }
-      const result = await dv.query(query)
-      if (!result.successful) {
-        throw new Error(
-          `search_dataview: query failed: ${result.error ?? 'unknown error'}`,
-        )
-      }
-      return JSON.stringify(result.value, null, 2)
-    }
-
-    throw new Error(`Unsupported vault tool: ${name}`)
-  }
-
-  private normalizeVaultPath(input: string): string {
-    const normalized = input.trim().replace(/\\/g, '/').replace(/^\.\//, '')
-    if (normalized.length === 0) {
-      return ''
-    }
-    if (normalized.startsWith('/')) {
-      throw new Error(
-        'Vault path must be relative, absolute paths are not allowed',
-      )
-    }
-    const parsed = path.posix.normalize(normalized)
-    if (
-      parsed === '..' ||
-      parsed.startsWith('../') ||
-      parsed.includes('/../')
-    ) {
-      throw new Error('Vault path cannot escape vault root')
-    }
-    return parsed
-  }
-
-  private async ensureParentDirectory(
-    filePath: string,
-    adapter: {
-      mkdir: (path: string) => Promise<void>
-      exists?: (path: string, sensitive?: boolean) => Promise<boolean>
-    },
-  ) {
-    const parent = path.posix.dirname(filePath)
-    if (!parent || parent === '.') {
-      return
-    }
-    await this.mkdirRecursive(parent, adapter)
-  }
-
-  private async mkdirRecursive(
-    dirPath: string,
-    adapter: {
-      mkdir: (path: string) => Promise<void>
-      exists?: (path: string, sensitive?: boolean) => Promise<boolean>
-    },
-  ) {
-    const parts = dirPath.split('/').filter(Boolean)
-    let cursor = ''
-    for (const part of parts) {
-      cursor = cursor.length === 0 ? part : `${cursor}/${part}`
-      const exists = adapter.exists ? await adapter.exists(cursor) : false
-      if (!exists) {
-        await adapter.mkdir(cursor).catch((error: Error) => {
-          if (!`${error?.message ?? ''}`.includes('already exists')) {
-            throw error
-          }
-        })
-      }
-    }
+    const registry = this.createBuiltinRegistry()
+    const entry = registry.resolve(name)
+    if (!entry) throw new Error(`Unsupported vault tool: ${name}`)
+    return entry.handler(args ?? {}, { conversationId: '', signal })
   }
 }

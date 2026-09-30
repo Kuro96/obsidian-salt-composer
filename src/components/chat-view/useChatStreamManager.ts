@@ -1,6 +1,6 @@
 import { UseMutationResult, useMutation } from '@tanstack/react-query'
 import { Notice } from 'obsidian'
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 
 import { useApp } from '../../contexts/app-context'
 import { useMcp } from '../../contexts/mcp-context'
@@ -11,7 +11,6 @@ import {
   LLMAPIKeyInvalidException,
   LLMAPIKeyNotSetException,
   LLMBaseUrlNotSetException,
-  LLMModelNotFoundException,
 } from '../../core/llm/exception'
 import { getChatModelClient } from '../../core/llm/manager'
 import { SessionMode } from '../../core/mcp/mcpManager'
@@ -74,42 +73,6 @@ export function useChatStreamManager({
     activeStreamAbortControllersRef.current = []
   }, [])
 
-  const { providerClient, model } = useMemo(() => {
-    try {
-      return getChatModelClient({
-        modelId: settings.chatModelId,
-        settings,
-        setSettings,
-      })
-    } catch (error) {
-      if (error instanceof LLMModelNotFoundException) {
-        if (settings.chatModels.length === 0) {
-          throw error
-        }
-        // Fallback to the first chat model if the selected chat model is not found
-        const firstChatModel = settings.chatModels[0]
-        setSettings({
-          ...settings,
-          chatModelId: firstChatModel.id,
-          chatModels: settings.chatModels.map((model) =>
-            model.id === firstChatModel.id
-              ? {
-                  ...model,
-                  enable: true,
-                }
-              : model,
-          ),
-        })
-        return getChatModelClient({
-          modelId: firstChatModel.id,
-          settings,
-          setSettings,
-        })
-      }
-      throw error
-    }
-  }, [settings, setSettings])
-
   const submitChatMutation = useMutation({
     mutationFn: async ({
       chatMessages,
@@ -131,6 +94,11 @@ export function useChatStreamManager({
       let unsubscribeHarness: (() => void) | undefined
 
       try {
+        const { providerClient, model } = getChatModelClient({
+          modelId: settings.chatModelId,
+          settings,
+          setSettings,
+        })
         const mcpManager = await getMcpManager()
         const capturedSettings = settings
         const harness = new ConversationHarness({
@@ -220,6 +188,7 @@ export function useChatStreamManager({
         app,
         mcpManager,
         enableSkills: settings.chatOptions.enableSkills,
+        getSettings: () => settings,
       })
       const permissionPolicy = new ToolPermissionPolicyImpl(
         registry,
@@ -232,6 +201,7 @@ export function useChatStreamManager({
         mcpManager,
         app,
         () => settings,
+        sessionMode,
       )
 
       return toolExecutor.execute({
@@ -241,7 +211,7 @@ export function useChatStreamManager({
         conversationId,
       })
     },
-    [app, getMcpManager, settings],
+    [app, getMcpManager, settings, sessionMode],
   )
 
   const applyReviewedToolCall = useCallback(
@@ -251,6 +221,7 @@ export function useChatStreamManager({
         app,
         mcpManager,
         enableSkills: settings.chatOptions.enableSkills,
+        getSettings: () => settings,
       })
       const permissionPolicy = new ToolPermissionPolicyImpl(
         registry,
@@ -263,6 +234,7 @@ export function useChatStreamManager({
         mcpManager,
         app,
         () => settings,
+        sessionMode,
       )
 
       return toolExecutor.applyReview({
@@ -270,7 +242,7 @@ export function useChatStreamManager({
         conversationId,
       })
     },
-    [app, getMcpManager, settings],
+    [app, getMcpManager, settings, sessionMode],
   )
 
   return {

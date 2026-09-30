@@ -94,7 +94,6 @@ export class MetadataToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const rawPath = args?.path
           if (typeof rawPath !== 'string' || rawPath.trim().length === 0)
@@ -149,7 +148,6 @@ export class MetadataToolPack {
         },
         tier: 'read-write',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const rawPath = args?.path
           if (typeof rawPath !== 'string' || rawPath.trim().length === 0)
@@ -227,7 +225,6 @@ export class MetadataToolPack {
         },
         tier: 'read-write',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const rawPath = args?.path
           const keys = Array.isArray(args?.keys) ? (args.keys as string[]) : []
@@ -281,7 +278,6 @@ export class MetadataToolPack {
         },
         tier: 'read-write',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const rawPath = args?.path
           const rawNewPath = args?.newPath
@@ -325,7 +321,6 @@ export class MetadataToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const pathPrefix =
             typeof args?.pathPrefix === 'string' ? args.pathPrefix : undefined
@@ -386,7 +381,6 @@ export class MetadataToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const property = args?.property
           if (typeof property !== 'string' || property.trim().length === 0)
@@ -475,7 +469,6 @@ export class MetadataToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const filter = args?.filter as VaultQueryFilter | undefined
           const select = Array.isArray(args?.select)
@@ -592,7 +585,6 @@ export class MetadataToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const rawPath = args?.path
           if (typeof rawPath !== 'string' || rawPath.trim().length === 0)
@@ -642,7 +634,6 @@ export class MetadataToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const rawPath = args?.path
           if (typeof rawPath !== 'string' || rawPath.trim().length === 0)

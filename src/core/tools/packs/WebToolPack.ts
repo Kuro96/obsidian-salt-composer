@@ -182,7 +182,6 @@ export class WebToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args, ctx) => {
           const input = fetchSchema.parse(args)
           const response = await requestWeb(
@@ -264,7 +263,6 @@ export class WebToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args, ctx) => {
           const { maxCharacters, ...input } = searchSchema.parse(args)
           const response = await requestWeb(

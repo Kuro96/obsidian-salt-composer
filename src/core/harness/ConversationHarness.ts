@@ -1,13 +1,4 @@
-/**
- * ConversationHarness — Phase 5 更新
- *
- * 会话级执行器，替代 ResponseGenerator 成为 UI 与执行层之间的边界。
- * Phase 5 变化：
- * - 创建并持有 ApprovalPolicyImpl 和 ToolPermissionPolicyImpl
- * - TurnEngine.run() 改为传入 registry + sessionMode（不再在构造时固定）
- * - ToolExecutor 使用 ToolPermissionPolicy 决策权限，不再依赖 McpManager.isToolExecutionAllowed()
- * - enableTools=false 时向 TurnEngine 传入 null registry（工具对 LLM 不可见）
- */
+/** Runs conversation turns and tools, preserving approvals shared by the chat view. */
 
 import { App } from 'obsidian'
 import { v4 as uuidv4 } from 'uuid'
@@ -96,6 +87,7 @@ export class ConversationHarness {
       params.mcpManager,
       params.app,
       params.getSettings,
+      params.sessionMode,
     )
 
     // 异步构建 registry，完成后创建真正的 policy 和 executor
@@ -103,6 +95,7 @@ export class ConversationHarness {
       app: params.app,
       mcpManager: params.mcpManager,
       enableSkills: params.enableSkills,
+      getSettings: params.getSettings,
     }).then((registry) => {
       this.builtRegistry = registry
       const permissionPolicy = new ToolPermissionPolicyImpl(
@@ -116,6 +109,7 @@ export class ConversationHarness {
         params.mcpManager,
         params.app,
         params.getSettings,
+        params.sessionMode,
       )
     })
 
@@ -301,11 +295,16 @@ export class ConversationHarness {
       id: uuidv4(),
       toolCalls: toolCallRequests.map((req) => ({
         request: req,
-        response: {
-          status: this.toolExecutor.isAllowed(req.name, this.conversationId)
-            ? ToolCallResponseStatus.Running
-            : ToolCallResponseStatus.PendingApproval,
-        },
+        response: !this.toolExecutor.isVisible(req.name)
+          ? {
+              status: ToolCallResponseStatus.Error,
+              error: `Tool ${req.name} is disabled or unavailable in this session mode.`,
+            }
+          : {
+              status: this.toolExecutor.isAllowed(req.name, this.conversationId)
+                ? ToolCallResponseStatus.Running
+                : ToolCallResponseStatus.PendingApproval,
+            },
       })),
     }
   }

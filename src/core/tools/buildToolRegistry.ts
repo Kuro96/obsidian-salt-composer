@@ -1,5 +1,5 @@
 /**
- * buildToolRegistry — ToolRegistry 工厂函数（Phase 3）
+ * buildToolRegistry — ToolRegistry 工厂函数
  *
  * 按当前会话状态组装完整的 ToolRegistry：
  * 1. 注册所有内置工具 packs（Vault / Workspace / Commands / Search）
@@ -11,6 +11,7 @@
 
 import { App } from 'obsidian'
 
+import type { SmartComposerSettings } from '../../settings/schema/setting.types'
 import { McpManager } from '../mcp/mcpManager'
 
 import { registerExternalMcpServer } from './adapters/ExternalMcpAdapter'
@@ -28,13 +29,14 @@ export type BuildToolRegistryOptions = {
   app: App
   mcpManager: McpManager
   enableSkills: boolean
+  getSettings?: () => SmartComposerSettings
 }
 
 export async function buildToolRegistry(
   opts: BuildToolRegistryOptions,
 ): Promise<ToolRegistry> {
   const { app, mcpManager, enableSkills } = opts
-  const registry = new ToolRegistryImpl()
+  const registry = new ToolRegistryImpl(opts.getSettings)
 
   // 1. 注册内置工具 packs
   new VaultToolPack(app).registerAll(registry)

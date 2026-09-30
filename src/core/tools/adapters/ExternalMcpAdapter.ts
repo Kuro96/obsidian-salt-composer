@@ -38,9 +38,6 @@ export function registerExternalMcpServer(
       tier: null, // external MCP tools have no builtin tier
       source: 'external-mcp',
       sourceId: serverName,
-      approvalRequired: !(
-        config.toolOptions[tool.name]?.allowAutoExecution ?? false
-      ),
       handler: makeExternalMcpHandler(client, tool.name),
     }
     registry.register(toolEntry)
@@ -52,15 +49,10 @@ function makeExternalMcpHandler(
   originalToolName: string,
 ): ToolEntry['handler'] {
   return async (args, ctx) => {
-    const abortController = new AbortController()
-    if (ctx.signal) {
-      ctx.signal.addEventListener('abort', () => abortController.abort())
-    }
-
     const result = (await client.callTool(
       { name: originalToolName, arguments: args },
       undefined,
-      { signal: abortController.signal },
+      { signal: ctx.signal },
     )) as McpToolCallResult
 
     if (result.content.length === 0)

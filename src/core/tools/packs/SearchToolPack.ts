@@ -82,7 +82,6 @@ export class SearchToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const includeCounts = args?.includeCounts === true
           const tagsWithCounts = (
@@ -122,7 +121,6 @@ export class SearchToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: makeSearchTextHandler(app),
       },
 
@@ -144,7 +142,6 @@ export class SearchToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const query = args?.query
           if (typeof query !== 'string' || query.trim().length === 0)

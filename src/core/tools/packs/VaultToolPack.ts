@@ -50,7 +50,6 @@ export class VaultToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const relativePath = normalizeVaultPath(
             typeof args?.path === 'string' ? args.path : '',
@@ -86,7 +85,6 @@ export class VaultToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const rawPath = args?.path
           if (typeof rawPath !== 'string' || rawPath.trim().length === 0) {
@@ -123,7 +121,6 @@ export class VaultToolPack {
         },
         tier: 'read-write',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const rawPath = args?.path
           const content = args?.content
@@ -176,7 +173,6 @@ export class VaultToolPack {
         },
         tier: 'read-write',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const rawPath = args?.path
           const oldText = args?.oldText
@@ -244,7 +240,6 @@ export class VaultToolPack {
         },
         tier: 'read-write',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const rawPath = args?.path
           if (typeof rawPath !== 'string' || rawPath.trim().length === 0)
@@ -294,7 +289,6 @@ export class VaultToolPack {
         },
         tier: 'read-write',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const rawPath = args?.path
           const content = args?.content
@@ -341,7 +335,6 @@ export class VaultToolPack {
         },
         tier: 'danger-zone',
         source: 'builtin',
-        approvalRequired: true,
         handler: async (args) => {
           const rawPath = args?.path
           if (typeof rawPath !== 'string' || rawPath.trim().length === 0)

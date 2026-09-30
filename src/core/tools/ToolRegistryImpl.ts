@@ -1,9 +1,6 @@
-/**
- * ToolRegistryImpl — ToolRegistry 接口的具体实现（Phase 3）
- *
- * 基于 Map 的简单注册中心。Phase 3 开始被 ConversationHarness 创建并使用。
- */
+/** Map-backed registry; tool lists respect disabled options and session mode. */
 
+import type { SmartComposerSettings } from '../../settings/schema/setting.types'
 import type { McpTool } from '../../types/mcp.types'
 import { getBuiltinToolTier } from '../mcp/builtin-tool-tiers'
 
@@ -11,6 +8,8 @@ import type { ToolEntry, ToolListFilter, ToolRegistry } from './ToolRegistry'
 
 export class ToolRegistryImpl implements ToolRegistry {
   private readonly entries: Map<string, ToolEntry> = new Map()
+
+  constructor(private readonly getSettings?: () => SmartComposerSettings) {}
 
   register(entry: ToolEntry): void {
     this.entries.set(entry.tool.name, entry)
@@ -27,8 +26,14 @@ export class ToolRegistryImpl implements ToolRegistry {
   list(filter?: ToolListFilter): McpTool[] {
     const mode = filter?.mode ?? 'read-write'
     const result: McpTool[] = []
+    const options = this.getSettings?.().mcp.builtin?.toolOptions
 
     for (const entry of this.entries.values()) {
+      if (
+        entry.source === 'builtin' &&
+        options?.[entry.tool.name]?.enabled === false
+      )
+        continue
       // 按 session 模式过滤：read-only 模式下隐藏 read-write / danger-zone 工具
       if (mode === 'read-only') {
         const tier = entry.tier ?? getBuiltinToolTier(entry.tool.name)

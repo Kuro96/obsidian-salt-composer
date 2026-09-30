@@ -1,11 +1,4 @@
-/**
- * ToolExecutor — Phase 5 更新
- *
- * 工具调用的统一执行入口。
- * Phase 5 变化：
- * - isAllowed() 改由 ToolPermissionPolicy 决策，移除对 McpManager.isToolExecutionAllowed() 的依赖
- * - McpManager 仅保留用于：① 外部 MCP 工具的 callTool() 回退 ② abortToolCall()
- */
+/** Executes registered tools, stages file reviews and shares cancellation with McpManager. */
 
 import { App, TFile, TFolder, parseYaml, stringifyYaml } from 'obsidian'
 
@@ -15,7 +8,7 @@ import {
   ToolCallResponse,
   ToolCallResponseStatus,
 } from '../../types/tool-call.types'
-import { McpManager } from '../mcp/mcpManager'
+import { McpManager, SessionMode } from '../mcp/mcpManager'
 import type { ToolPermissionPolicy } from '../policy/types'
 import type { ToolRegistry } from '../tools/ToolRegistry'
 import {
@@ -41,9 +34,11 @@ export class ToolExecutor {
     private readonly mcpManager: McpManager,
     private readonly app: App,
     private readonly getSettings?: () => SmartComposerSettings,
+    private readonly sessionMode: SessionMode = 'read-write',
   ) {}
 
   isAllowed(toolName: string, conversationId: string): boolean {
+    if (!this.isVisible(toolName)) return false
     // Staged review tools skip PendingApproval — the ApplyView diff UI
     // serves as the approval mechanism.
     if (this.shouldStageReview(toolName)) return true
@@ -51,6 +46,10 @@ export class ToolExecutor {
       this.permissionPolicy.getApprovalDecision(toolName, conversationId) ===
       'allow'
     )
+  }
+
+  isVisible(toolName: string): boolean {
+    return this.permissionPolicy.isVisible(toolName, this.sessionMode)
   }
 
   shouldStageReview(toolName: string): boolean {
@@ -79,6 +78,13 @@ export class ToolExecutor {
   }): Promise<ToolCallResponse> {
     const { name, args, id, signal, conversationId } = opts
 
+    if (!this.isVisible(name)) {
+      return {
+        status: ToolCallResponseStatus.Error,
+        error: `Tool ${name} is disabled or unavailable in this session mode.`,
+      }
+    }
+
     const parsedArgs: Record<string, unknown> =
       typeof args === 'string'
         ? args === ''
@@ -97,15 +103,26 @@ export class ToolExecutor {
 
     const entry = this.registry.resolve(name)
     if (entry) {
-      if (this.shouldStageReview(name)) {
-        try {
+      const abortController = this.mcpManager.createToolAbortController(id)
+      const onAbort = () => abortController.abort()
+      if (signal?.aborted) onAbort()
+      else signal?.addEventListener('abort', onAbort, { once: true })
+
+      try {
+        if (abortController.signal.aborted)
+          return { status: ToolCallResponseStatus.Aborted }
+        if (this.shouldStageReview(name)) {
           const proposal = await this.buildReviewProposal(name, parsedArgs)
+          if (abortController.signal.aborted)
+            return { status: ToolCallResponseStatus.Aborted }
 
           if (this.isAutoAcceptReview(name)) {
             const response = await this.applyReview({
               proposal,
               conversationId,
             })
+            if (abortController.signal.aborted)
+              return { status: ToolCallResponseStatus.Aborted }
             if (response.status === ToolCallResponseStatus.Success) {
               return {
                 status: ToolCallResponseStatus.Success,
@@ -119,36 +136,31 @@ export class ToolExecutor {
             status: ToolCallResponseStatus.PendingReview,
             proposal,
           }
-        } catch (error) {
-          return {
-            status: ToolCallResponseStatus.Error,
-            error: (error as Error).message || 'Unknown error occurred',
-          }
         }
-      }
-
-      const abortController = new AbortController()
-      if (signal) {
-        signal.addEventListener('abort', () => abortController.abort())
-      }
-
-      try {
         const text = await entry.handler(parsedArgs, {
           conversationId,
           signal: abortController.signal,
         })
+        if (abortController.signal.aborted)
+          return { status: ToolCallResponseStatus.Aborted }
         return {
           status: ToolCallResponseStatus.Success,
           data: { type: 'text', text },
         }
       } catch (error) {
-        if ((error as Error).name === 'AbortError') {
+        if (
+          abortController.signal.aborted ||
+          (error as Error).name === 'AbortError'
+        ) {
           return { status: ToolCallResponseStatus.Aborted }
         }
         return {
           status: ToolCallResponseStatus.Error,
           error: (error as Error).message || 'Unknown error occurred',
         }
+      } finally {
+        signal?.removeEventListener('abort', onAbort)
+        this.mcpManager.releaseToolAbortController(id, abortController)
       }
     }
 
@@ -161,6 +173,13 @@ export class ToolExecutor {
   }): Promise<ToolCallResponse> {
     const { proposal } = opts
 
+    if (!this.isVisible(proposal.toolName)) {
+      return {
+        status: ToolCallResponseStatus.Error,
+        error: `Tool ${proposal.toolName} is disabled or unavailable in this session mode.`,
+      }
+    }
+
     try {
       switch (proposal.kind) {
         case 'write':
@@ -172,6 +191,15 @@ export class ToolExecutor {
             throw new Error(`Missing reviewed content for ${proposal.toolName}`)
           }
           const adapter = getVaultAdapter(this.app)
+          const exists = await adapter.exists?.(proposal.targetPath)
+          const currentText = exists
+            ? await adapter.read(proposal.targetPath)
+            : undefined
+          if (currentText !== proposal.beforeText) {
+            throw new Error(
+              `File changed since review: ${proposal.targetPath}. Generate a new proposal.`,
+            )
+          }
           const createDirectories =
             proposal.metadata?.createDirectories === true
           if (createDirectories) {
@@ -342,24 +370,20 @@ export class ToolExecutor {
     const adapter = getVaultAdapter(this.app)
     const exists = adapter.exists ? await adapter.exists(targetPath) : false
     const ensureTrailingNewline = args.ensureTrailingNewline === true
-    let beforeText = ''
-    if (exists) {
-      beforeText = await adapter.read(targetPath)
-      if (
-        ensureTrailingNewline &&
-        beforeText.length > 0 &&
-        !beforeText.endsWith('\n')
-      ) {
-        beforeText += '\n'
-      }
-    }
+    const beforeText = exists ? await adapter.read(targetPath) : ''
+    const separator =
+      ensureTrailingNewline &&
+      beforeText.length > 0 &&
+      !beforeText.endsWith('\n')
+        ? '\n'
+        : ''
 
     return {
       toolName: 'vault_append',
       targetPath,
       kind: 'append',
       beforeText: exists ? beforeText : undefined,
-      afterText: `${beforeText}${content}`,
+      afterText: `${beforeText}${separator}${content}`,
       summary: exists
         ? `Append to ${targetPath}`
         : `Create and append to ${targetPath}`,

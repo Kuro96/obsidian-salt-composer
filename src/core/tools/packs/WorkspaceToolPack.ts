@@ -50,7 +50,6 @@ export class WorkspaceToolPack {
         },
         tier: 'read-write',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const rawPath = args?.path
           if (typeof rawPath !== 'string' || rawPath.trim().length === 0)

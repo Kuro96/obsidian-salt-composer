@@ -30,7 +30,6 @@ export class SkillToolAdapter {
       },
       tier: null,
       source: 'skill',
-      approvalRequired: false,
       handler: async (args) => {
         const skill = args?.name
         if (typeof skill !== 'string' || skill.trim().length === 0) {

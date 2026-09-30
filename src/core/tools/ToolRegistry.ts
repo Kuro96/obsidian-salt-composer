@@ -1,11 +1,10 @@
 /**
- * ToolRegistry — Phase 1 接口定义
+ * ToolRegistry — 工具注册与查询
  *
  * 统一的工具注册与查询层。所有工具（内置 / 外部 MCP / skill）都通过此接口注册，
  * TurnEngine 和 ToolExecutor 通过此接口查找工具，而不直接依赖 McpManager。
  *
- * 当前（Phase 1-2）：此接口仅作为契约，ToolRegistry 的实现暂时委托给旧 McpManager。
- * Phase 3 之后：逐步由 BuiltinToolPack / ExternalMcpAdapter / SkillToolAdapter 填充。
+ * 由内置 packs、外部 MCP 和 skill adapters 填充。
  */
 
 import type { McpTool } from '../../types/mcp.types'
@@ -34,7 +33,6 @@ export type ToolExecutionContext = {
  * - `source`：来源，用于路由到对应执行器
  * - `sourceId`：外部 MCP server ID 或 skill name，内置工具为 undefined
  * - `handler`：实际执行函数，返回文本结果
- * - `approvalRequired`：是否需要用户批准后才能执行（由 policy 层决定最终行为）
  */
 export type ToolEntry = {
   tool: McpTool
@@ -45,7 +43,6 @@ export type ToolEntry = {
     args: Record<string, unknown>,
     ctx: ToolExecutionContext,
   ) => Promise<string>
-  approvalRequired: boolean
 }
 
 // ─── ToolRegistry Interface ──────────────────────────────────────────────────
@@ -53,8 +50,6 @@ export type ToolEntry = {
 export type ToolListFilter = {
   /** 按 session 模式过滤可见工具（read-only 模式下隐藏 read-write / danger-zone） */
   mode?: SessionMode
-  /** 是否排除已禁用的工具 */
-  excludeDisabled?: boolean
 }
 
 /**

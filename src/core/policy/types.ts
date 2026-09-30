@@ -1,11 +1,4 @@
-/**
- * Policy 层接口 — Phase 1 接口定义
- *
- * 将权限与模式判断从 UI state、prompt 文案、McpManager 等多处收口到独立的 policy 层。
- *
- * 当前（Phase 1-4）：这些接口仅作为契约定义，实现在 Phase 5 完成。
- * Phase 5 之后：UI 和 TurnEngine 改为依赖这些接口，旧 McpManager.isToolExecutionAllowed() 被移除。
- */
+/** Tool visibility, automatic execution options and conversation approvals. */
 
 import type { SessionMode } from '../mcp/mcpManager'
 
@@ -15,33 +8,9 @@ import type { SessionMode } from '../mcp/mcpManager'
  * 审批决策三档：
  * - 'allow'：直接自动执行，无需用户介入
  * - 'ask'：暂停，等待用户批准
- * - 'deny'：拒绝执行
+ * - 'deny'：不自动执行，显式用户批准沿用现有优先级
  */
 export type ApprovalDecision = 'allow' | 'ask' | 'deny'
-
-// ─── SessionModePolicy ───────────────────────────────────────────────────────
-
-/**
- * SessionModePolicy — session 模式（只读/读写）的单一数据源。
- *
- * 当前模式散落在：
- * - Chat.tsx sessionMode state
- * - promptGenerator.ts 只读文案约束
- * - McpManager.filterToolsBySessionMode()
- *
- * 重构后，这里成为唯一权威，UI 订阅此接口的变更。
- */
-export type SessionModePolicy = {
-  readonly mode: SessionMode
-
-  setMode(mode: SessionMode): void
-
-  /**
-   * 订阅模式变更。
-   * @returns 取消订阅函数
-   */
-  subscribe(callback: (mode: SessionMode) => void): () => void
-}
 
 // ─── ToolPermissionPolicy ────────────────────────────────────────────────────
 
@@ -51,7 +20,7 @@ export type SessionModePolicy = {
  * 职责分工：
  * - isVisible：决定工具是否出现在发给 LLM 的工具列表中（read-only 模式下写工具不可见）
  * - getApprovalDecision：决定工具调用是自动执行、等待批准还是拒绝
- * - allowForConversation / allowPermanently：用户批准后更新规则
+ * - allowForConversation：记录会话批准；永久选项由设置入口保存
  *
  * 该接口整合了当前 McpManager.isToolExecutionAllowed() 和 allowToolForConversation() 的职责。
  */
@@ -76,13 +45,6 @@ export type ToolPermissionPolicy = {
    * 对应 UI 中"Allow for this chat"操作。
    */
   allowForConversation(toolName: string, conversationId: string): void
-
-  /**
-   * 记录用户永久批准了某工具的自动执行。
-   * 对应 UI 中"Always allow"操作。
-   * 注意：永久批准应持久化到 settings。
-   */
-  allowPermanently(toolName: string): void
 }
 
 // ─── ApprovalPolicy ──────────────────────────────────────────────────────────
@@ -103,19 +65,9 @@ export type ApprovalPolicy = {
   isAllowedForConversation(toolName: string, conversationId: string): boolean
 
   /**
-   * 某工具是否有永久批准记录（来自 settings）。
-   */
-  isAllowedPermanently(toolName: string): boolean
-
-  /**
    * 记录会话级批准。
    */
   setConversationApproval(toolName: string, conversationId: string): void
-
-  /**
-   * 记录永久批准（需要同步到 settings）。
-   */
-  setPermanentApproval(toolName: string): void
 
   /**
    * 清除某个会话的所有批准记录（会话结束时调用）。

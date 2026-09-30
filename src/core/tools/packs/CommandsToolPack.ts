@@ -35,7 +35,6 @@ export class CommandsToolPack {
         },
         tier: 'read-only',
         source: 'builtin',
-        approvalRequired: false,
         handler: async () => {
           const commandsMap = (app as App & { commands: ObsidianCommands })
             .commands.commands
@@ -65,7 +64,6 @@ export class CommandsToolPack {
         },
         tier: 'read-write',
         source: 'builtin',
-        approvalRequired: false,
         handler: async (args) => {
           const commandId = args?.commandId
           if (typeof commandId !== 'string' || commandId.trim().length === 0)
