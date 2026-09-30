@@ -7,6 +7,8 @@ export const BUILTIN_READ_ONLY_TOOLS: string[] = [
   'tags_list',
   'search_text',
   'search_dataview',
+  'webfetch',
+  'web_search',
   // Phase 4: metadata tools
   'note_frontmatter_get',
   'vault_properties_list',

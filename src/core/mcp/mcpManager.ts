@@ -20,6 +20,7 @@ import { CommandsToolPack } from '../tools/packs/CommandsToolPack'
 import { MetadataToolPack } from '../tools/packs/MetadataToolPack'
 import { SearchToolPack } from '../tools/packs/SearchToolPack'
 import { VaultToolPack } from '../tools/packs/VaultToolPack'
+import { WebToolPack } from '../tools/packs/WebToolPack'
 import { WorkspaceToolPack } from '../tools/packs/WorkspaceToolPack'
 import { ToolRegistryImpl } from '../tools/ToolRegistryImpl'
 
@@ -389,6 +390,7 @@ export class McpManager {
     new CommandsToolPack(this.app).registerAll(registry)
     new SearchToolPack(this.app).registerAll(registry)
     new MetadataToolPack(this.app).registerAll(registry)
+    new WebToolPack().registerAll(registry)
     return registry.list()
   }
 
@@ -450,7 +452,7 @@ export class McpManager {
               ? {}
               : JSON.parse(args)
             : args
-        const out = await this.callVaultTool(name, parsedArgs)
+        const out = await this.callVaultTool(name, parsedArgs, compositeSignal)
         return {
           status: ToolCallResponseStatus.Success,
           data: {
@@ -584,7 +586,15 @@ export class McpManager {
   private async callVaultTool(
     name: string,
     args: Record<string, unknown> | undefined,
+    signal?: AbortSignal,
   ): Promise<string> {
+    if (name === 'webfetch' || name === 'web_search') {
+      const registry = new ToolRegistryImpl()
+      new WebToolPack().registerAll(registry)
+      const entry = registry.resolve(name)
+      if (!entry) throw new Error(`Unknown web tool: ${name}`)
+      return entry.handler(args ?? {}, { conversationId: '', signal })
+    }
     const adapter = this.app.vault.adapter as {
       list: (path: string) => Promise<{ files: string[]; folders: string[] }>
       read: (path: string) => Promise<string>

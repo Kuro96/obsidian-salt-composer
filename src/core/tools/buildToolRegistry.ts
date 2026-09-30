@@ -19,6 +19,7 @@ import { CommandsToolPack } from './packs/CommandsToolPack'
 import { MetadataToolPack } from './packs/MetadataToolPack'
 import { SearchToolPack } from './packs/SearchToolPack'
 import { VaultToolPack } from './packs/VaultToolPack'
+import { WebToolPack } from './packs/WebToolPack'
 import { WorkspaceToolPack } from './packs/WorkspaceToolPack'
 import type { ToolRegistry } from './ToolRegistry'
 import { ToolRegistryImpl } from './ToolRegistryImpl'
@@ -41,6 +42,7 @@ export async function buildToolRegistry(
   new CommandsToolPack(app).registerAll(registry)
   new SearchToolPack(app).registerAll(registry)
   new MetadataToolPack(app).registerAll(registry)
+  new WebToolPack().registerAll(registry)
 
   // 2. 注册外部 MCP server 工具
   for (const server of mcpManager.getServers()) {
