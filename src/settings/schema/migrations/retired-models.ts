@@ -1,36 +1,6 @@
-import { SettingMigration } from '../setting.types'
-
-import { DefaultChatModels, getMigratedChatModels } from './migrationUtils'
-
-const DEFAULT_CHAT_MODEL_ID_V18 = 'gpt-5.5 (plan)'
-const DEFAULT_CHAT_MODELS_V18: DefaultChatModels = [
-  {
-    providerType: 'openai-plan',
-    providerId: 'openai-plan',
-    id: 'gpt-5.2 (plan)',
-    model: 'gpt-5.2',
-  },
-  {
-    providerType: 'openai-plan',
-    providerId: 'openai-plan',
-    id: 'gpt-5.3-codex (plan)',
-    model: 'gpt-5.3-codex',
-  },
-  {
-    providerType: 'openai-plan',
-    providerId: 'openai-plan',
-    id: 'gpt-5.4 (plan)',
-    model: 'gpt-5.4',
-  },
-  {
-    providerType: 'openai-plan',
-    providerId: 'openai-plan',
-    id: DEFAULT_CHAT_MODEL_ID_V18,
-    model: 'gpt-5.5',
-  },
-]
-
-const RETIRED_API_DEFAULT_CHAT_MODEL_IDS = new Set([
+// Exact built-in IDs replaced by the current presets. Custom provider entries
+// are retained even when their IDs match a former built-in model.
+export const RETIRED_CHAT_MODEL_IDS = new Set([
   'anthropic/claude-3.5-sonnet-latest',
   'anthropic/claude-3.5-haiku',
   'claude-3-opus',
@@ -96,23 +66,16 @@ const RETIRED_API_DEFAULT_CHAT_MODEL_IDS = new Set([
   'sonar-pro',
   'sonar-reasoning',
   'sonar-reasoning-pro',
+  'gpt-5.2 (plan)',
+  'gpt-5.3-codex (plan)',
+  'gpt-5.4 (plan)',
+  'gpt-5.5 (plan)',
+  ...[
+    'gpt-5.6-sol',
+    'gpt-5.6-terra',
+    'gpt-5.6-luna',
+    'gpt-6-terra',
+    'gpt-6.1-terra',
+    'gpt-6.1-luna',
+  ].flatMap((model) => [`${model} (plan)`, `${model}-fast (plan)`]),
 ])
-
-export const migrateFrom17To18: SettingMigration['migrate'] = (data) => {
-  const newData = { ...data }
-  newData.version = 18
-  const chatModels = (
-    getMigratedChatModels(newData, DEFAULT_CHAT_MODELS_V18) as { id: string }[]
-  ).filter(
-    (chatModel: { id: string }) =>
-      !RETIRED_API_DEFAULT_CHAT_MODEL_IDS.has(chatModel.id),
-  )
-
-  newData.chatModels = chatModels
-  if (!chatModels.some((chatModel) => chatModel.id === newData.chatModelId)) {
-    newData.chatModelId = DEFAULT_CHAT_MODEL_ID_V18
-  }
-  delete newData.applyModelId
-
-  return newData
-}

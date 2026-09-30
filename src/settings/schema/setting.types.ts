@@ -11,8 +11,6 @@ import { embeddingModelSchema } from '../../types/embedding-model.types'
 import { mcpServerConfigSchema } from '../../types/mcp.types'
 import { llmProviderSchema } from '../../types/provider.types'
 
-import { SETTINGS_SCHEMA_VERSION } from './migrations'
-
 const ragOptionsSchema = z.object({
   chunkSize: z.number().catch(1000),
   thresholdTokens: z.number().catch(8192),
@@ -46,9 +44,6 @@ const agentOptionsSchema = z.object({
  */
 
 export const smartComposerSettingsSchema = z.object({
-  // Version
-  version: z.literal(SETTINGS_SCHEMA_VERSION).catch(SETTINGS_SCHEMA_VERSION),
-
   vaultChatEnabled: z.boolean().catch(true),
 
   providers: z.array(llmProviderSchema).catch([...DEFAULT_PROVIDERS]),
@@ -143,9 +138,3 @@ export const smartComposerSettingsSchema = z.object({
     }),
 })
 export type SmartComposerSettings = z.infer<typeof smartComposerSettingsSchema>
-
-export type SettingMigration = {
-  fromVersion: number
-  toVersion: number
-  migrate: (data: Record<string, unknown>) => Record<string, unknown>
-}

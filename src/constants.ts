@@ -176,9 +176,8 @@ export const PROVIDER_TYPES_INFO = {
 >
 
 /**
- * Important
- * 1. When adding new default provider, settings migration should be added
- * 2. If there's same provider id in user's settings, it's data should be overwritten by default provider
+ * Unified settings migration adds missing providers and retains existing
+ * credentials and provider options.
  */
 export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
   {
@@ -228,9 +227,8 @@ export const DEFAULT_PROVIDERS: readonly LLMProvider[] = [
 ]
 
 /**
- * Important
- * 1. When adding new default model, settings migration should be added
- * 2. If there's same model id in user's settings, it's data should be overwritten by default model
+ * Unified settings migration adds missing presets and retains existing model
+ * preferences. Add retired built-in IDs to migrations/retired-models.ts.
  */
 export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
   'gpt-6.1-sol',
@@ -254,9 +252,8 @@ export const DEFAULT_CHAT_MODELS: readonly ChatModel[] = [
 )
 
 /**
- * Important
- * 1. When adding new default embedding model, settings migration should be added
- * 2. If there's same embedding model id in user's settings, it's data should be overwritten by default embedding model
+ * Unified settings migration adds missing embedding models and retains
+ * existing model settings.
  */
 export const DEFAULT_EMBEDDING_MODELS: readonly EmbeddingModel[] = [
   {

@@ -5,15 +5,12 @@ import {
   DEFAULT_PROVIDERS,
 } from '../../constants'
 
-import { SETTINGS_SCHEMA_VERSION } from './migrations'
 import { parseSmartComposerSettings } from './settings'
 
 describe('parseSmartComposerSettings', () => {
   it('should return default values for empty input', () => {
     const result = parseSmartComposerSettings({})
     expect(result).toEqual({
-      version: SETTINGS_SCHEMA_VERSION,
-
       vaultChatEnabled: true,
 
       providers: [...DEFAULT_PROVIDERS],
@@ -57,13 +54,13 @@ describe('parseSmartComposerSettings', () => {
     })
   })
 
-  it('should coerce future settings back to the current schema version', () => {
+  it('should discard obsolete fields without storing a settings version', () => {
     const result = parseSmartComposerSettings({
-      version: SETTINGS_SCHEMA_VERSION + 1,
+      version: 22,
       systemPrompt: 'test prompt',
     })
 
-    expect(result.version).toBe(SETTINGS_SCHEMA_VERSION)
+    expect(result).not.toHaveProperty('version')
     expect(result.vaultChatEnabled).toBe(true)
     expect(result.agents.directoryName).toBe('.agents')
     expect(result).not.toHaveProperty('systemPrompt')
