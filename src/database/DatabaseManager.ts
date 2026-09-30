@@ -39,12 +39,17 @@ export class DatabaseManager {
       normalizePath(PGLITE_DB_PATH),
       options.persistChanges ?? true,
     )
-    dbManager.db = await dbManager.loadExistingDatabase()
-    if (!dbManager.db) {
-      dbManager.db = await dbManager.createNewDatabase()
+    try {
+      dbManager.db = await dbManager.loadExistingDatabase()
+      if (!dbManager.db) {
+        dbManager.db = await dbManager.createNewDatabase()
+      }
+      await dbManager.migrateDatabase()
+      await dbManager.save()
+    } catch (error) {
+      await dbManager.pgClient?.close()
+      throw error
     }
-    await dbManager.migrateDatabase()
-    await dbManager.save()
 
     // WeakMap setup
     const managers = {
@@ -168,7 +173,7 @@ export class DatabaseManager {
         // This error occurs when using an outdated Obsidian installer version
         throw new PGLiteAbortedException()
       }
-      return null
+      throw error
     }
   }
 
@@ -200,17 +205,20 @@ export class DatabaseManager {
       )
     } catch (error) {
       console.error('Error saving database:', error)
+      throw error
     }
   }
 
   async cleanup() {
     // save before cleanup
-    await this.save()
-    // WeakMap cleanup
-    DatabaseManager.managers.delete(this)
-    await this.pgClient?.close()
-    this.pgClient = null
-    this.db = null
+    try {
+      await this.save()
+    } finally {
+      DatabaseManager.managers.delete(this)
+      await this.pgClient?.close()
+      this.pgClient = null
+      this.db = null
+    }
   }
 
   // TODO: This function is a temporary workaround chosen due to the difficulty of bundling postgres.wasm and postgres.data from node_modules into a single JS file. The ultimate goal is to bundle everything into one JS file in the future.

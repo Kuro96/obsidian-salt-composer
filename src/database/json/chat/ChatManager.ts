@@ -178,6 +178,7 @@ export class ChatManager extends AbstractJsonRepository<
   private async listChatEntries(): Promise<
     { fileName: string; chat: ChatConversation }[]
   > {
+    await this.ensureDirectory()
     const files = await this.app.vault.adapter.list(this.dataDir)
     const fileNames = files.files
       .map((filePath) => filePath.split('/').pop())
@@ -265,6 +266,7 @@ export class ChatManager extends AbstractJsonRepository<
     fileName: string,
     chat: ChatConversation,
   ): Promise<void> {
+    await this.ensureDirectory()
     const filePath = this.getFilePath(fileName)
     await this.app.vault.adapter.write(filePath, JSON.stringify(chat, null, 2))
   }

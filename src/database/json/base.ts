@@ -8,10 +8,9 @@ export abstract class AbstractJsonRepository<T, M> {
   constructor(app: App, dataDir: string) {
     this.app = app
     this.dataDir = normalizePath(dataDir)
-    this.ensureDirectory()
   }
 
-  private async ensureDirectory(): Promise<void> {
+  protected async ensureDirectory(): Promise<void> {
     if (!(await this.app.vault.adapter.exists(this.dataDir))) {
       await this.app.vault.adapter.mkdir(this.dataDir)
     }
@@ -24,6 +23,7 @@ export abstract class AbstractJsonRepository<T, M> {
   protected abstract parseFileName(fileName: string): M | null
 
   public async create(row: T): Promise<void> {
+    await this.ensureDirectory()
     const fileName = this.generateFileName(row)
     const filePath = normalizePath(path.join(this.dataDir, fileName))
     const content = JSON.stringify(row, null, 2)
@@ -36,6 +36,7 @@ export abstract class AbstractJsonRepository<T, M> {
   }
 
   public async update(oldRow: T, newRow: T): Promise<void> {
+    await this.ensureDirectory()
     const oldFileName = this.generateFileName(oldRow)
     const newFileName = this.generateFileName(newRow)
     const content = JSON.stringify(newRow, null, 2)
@@ -54,6 +55,7 @@ export abstract class AbstractJsonRepository<T, M> {
 
   // List metadata for all records by parsing file names.
   public async listMetadata(): Promise<(M & { fileName: string })[]> {
+    await this.ensureDirectory()
     const files = await this.app.vault.adapter.list(this.dataDir)
     return files.files
       .map((filePath) => path.basename(filePath))

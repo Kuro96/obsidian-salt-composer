@@ -28,6 +28,7 @@ async function transferChatHistoryFromLegacy(app: App): Promise<void> {
   const newChatManager = new ChatManager(app)
 
   const chatList = await oldChatManager.getChatList()
+  let failed = false
 
   for (const chatMeta of chatList) {
     try {
@@ -57,9 +58,14 @@ async function transferChatHistoryFromLegacy(app: App): Promise<void> {
       await oldChatManager.deleteChatConversation(oldChat.id)
     } catch (error) {
       console.error(`Error migrating chat ${chatMeta.id}:`, error)
+      failed = true
     }
   }
 
+  if (failed)
+    throw new Error(
+      'Some chats could not be migrated. Migration will be retried on reload.',
+    )
   console.log('Chat history migration to JSON database completed')
 }
 
@@ -82,6 +88,7 @@ async function transferTemplatesFromDrizzle(
   const drizzleTemplateManager = dbManager.getTemplateManager()
 
   const templates = await drizzleTemplateManager.findAllTemplates()
+  let failed = false
 
   for (const template of templates) {
     try {
@@ -107,10 +114,15 @@ async function transferTemplatesFromDrizzle(
         console.log(`Duplicate template found: ${template.name}. Skipping...`)
       } else {
         console.error(`Error migrating template ${template.name}:`, error)
+        failed = true
       }
     }
   }
 
+  if (failed)
+    throw new Error(
+      'Some templates could not be migrated. Migration will be retried on reload.',
+    )
   console.log('Templates migration to JSON database completed')
 }
 
