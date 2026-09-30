@@ -19,6 +19,7 @@ export const getEmbeddingModelClient = ({
   const providerClient = getProviderClient({
     settings,
     providerId: embeddingModel.providerId,
+    expectedProviderType: embeddingModel.providerType,
   })
 
   return {

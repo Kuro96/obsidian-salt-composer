@@ -39,6 +39,18 @@ const agentOptionsSchema = z.object({
   directoryName: z.string().catch('.agents'),
 })
 
+function validItems<T>(schema: z.ZodType<T>, defaults: readonly T[]) {
+  return z
+    .array(z.unknown())
+    .transform((items): T[] =>
+      items.flatMap((item) => {
+        const result = schema.safeParse(item)
+        return result.success ? [result.data] : []
+      }),
+    )
+    .catch([...defaults])
+}
+
 /**
  * Settings
  */
@@ -46,13 +58,11 @@ const agentOptionsSchema = z.object({
 export const smartComposerSettingsSchema = z.object({
   vaultChatEnabled: z.boolean().catch(true),
 
-  providers: z.array(llmProviderSchema).catch([...DEFAULT_PROVIDERS]),
+  providers: validItems(llmProviderSchema, DEFAULT_PROVIDERS),
 
-  chatModels: z.array(chatModelSchema).catch([...DEFAULT_CHAT_MODELS]),
+  chatModels: validItems(chatModelSchema, DEFAULT_CHAT_MODELS),
 
-  embeddingModels: z
-    .array(embeddingModelSchema)
-    .catch([...DEFAULT_EMBEDDING_MODELS]),
+  embeddingModels: validItems(embeddingModelSchema, DEFAULT_EMBEDDING_MODELS),
 
   chatModelId: z
     .string()
@@ -138,3 +148,7 @@ export const smartComposerSettingsSchema = z.object({
     }),
 })
 export type SmartComposerSettings = z.infer<typeof smartComposerSettingsSchema>
+
+export type SettingsUpdate =
+  | SmartComposerSettings
+  | ((current: SmartComposerSettings) => SmartComposerSettings)

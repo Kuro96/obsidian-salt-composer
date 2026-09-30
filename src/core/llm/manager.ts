@@ -1,4 +1,9 @@
-import { SmartComposerSettings } from '../../settings/schema/setting.types'
+import isEqual from 'lodash.isequal'
+
+import {
+  SettingsUpdate,
+  SmartComposerSettings,
+} from '../../settings/schema/setting.types'
 import { ChatModel } from '../../types/chat-model.types'
 import { LLMProvider } from '../../types/provider.types'
 
@@ -25,36 +30,56 @@ import { XaiProvider } from './xaiProvider'
 
 export function getProviderClient({
   providerId,
+  expectedProviderType,
   settings,
   setSettings,
 }: {
   providerId: string
+  expectedProviderType?: LLMProvider['type']
   settings: SmartComposerSettings
-  setSettings?: (newSettings: SmartComposerSettings) => void | Promise<void>
+  setSettings?: (newSettings: SettingsUpdate) => void | Promise<void>
 }): BaseLLMProvider<LLMProvider> {
   const provider = settings.providers.find((p) => p.id === providerId)
   if (!provider) {
     throw new Error(`Provider ${providerId} not found`)
   }
+  if (expectedProviderType && provider.type !== expectedProviderType) {
+    throw new Error(
+      `Provider ${providerId} is ${provider.type}, but the model expects ${expectedProviderType}. Fix the model's provider settings.`,
+    )
+  }
 
+  let oauthSnapshot =
+    provider.type === 'openai-plan' ? provider.oauth : undefined
   const onProviderUpdate = setSettings
     ? async (targetProviderId: string, update: Partial<LLMProvider>) => {
-        const updatedProviders: LLMProvider[] = settings.providers.map(
-          (item) =>
-            item.id === targetProviderId
-              ? ({ ...item, ...update } as LLMProvider)
-              : item,
-        )
-        await setSettings({
-          ...settings,
-          providers: updatedProviders,
+        await setSettings((currentSettings) => {
+          const currentProvider = currentSettings.providers.find(
+            (item) => item.id === targetProviderId,
+          )
+          if (!currentProvider || currentProvider.type !== provider.type)
+            return currentSettings
+          if (
+            currentProvider.type === 'openai-plan' &&
+            !isEqual(currentProvider.oauth, oauthSnapshot)
+          )
+            return currentSettings
+          if ('oauth' in update) oauthSnapshot = update.oauth
+          return {
+            ...currentSettings,
+            providers: currentSettings.providers.map((item) =>
+              item.id === targetProviderId
+                ? ({ ...item, ...update } as LLMProvider)
+                : item,
+            ),
+          }
         })
       }
     : undefined
 
   switch (provider.type) {
     case 'openai-plan': {
-      return new OpenAICodexProvider(provider, onProviderUpdate)
+      return new OpenAICodexProvider({ ...provider }, onProviderUpdate)
     }
     case 'anthropic': {
       return new AnthropicProvider(provider)
@@ -102,7 +127,7 @@ export function getChatModelClient({
 }: {
   modelId: string
   settings: SmartComposerSettings
-  setSettings: (newSettings: SmartComposerSettings) => void | Promise<void>
+  setSettings: (newSettings: SettingsUpdate) => void | Promise<void>
 }): {
   providerClient: BaseLLMProvider<LLMProvider>
   model: ChatModel
@@ -114,6 +139,7 @@ export function getChatModelClient({
 
   const providerClient = getProviderClient({
     providerId: chatModel.providerId,
+    expectedProviderType: chatModel.providerType,
     settings,
     setSettings,
   })

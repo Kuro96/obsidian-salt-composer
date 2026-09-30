@@ -1,4 +1,6 @@
-import { Editor, MarkdownView, Notice, Plugin } from 'obsidian'
+import isEqual from 'lodash.isequal'
+import { Editor, MarkdownView, Notice, Plugin, normalizePath } from 'obsidian'
+import { v4 as uuidv4 } from 'uuid'
 
 import { ApplyView, ApplyViewState } from './ApplyView'
 import { ChatView } from './ChatView'
@@ -14,6 +16,7 @@ import {
   migrateToJsonDatabase,
 } from './database/json/migrateToJsonDatabase'
 import {
+  SettingsUpdate,
   SmartComposerSettings,
   smartComposerSettingsSchema,
 } from './settings/schema/setting.types'
@@ -31,6 +34,7 @@ export default class SmartComposerPlugin extends Plugin {
   private dbManagerInitPromise: Promise<DatabaseManager> | null = null
   private ragEngineInitPromise: Promise<RAGEngine> | null = null
   private settingsSavePromise: Promise<void> = Promise.resolve()
+  private settingsWriteBlocked = false
   private timeoutIds: ReturnType<typeof setTimeout>[] = [] // Use ReturnType instead of number
 
   async onload() {
@@ -159,7 +163,9 @@ export default class SmartComposerPlugin extends Plugin {
     this.ragEngineInitPromise = null
 
     // DatabaseManager cleanup
-    this.dbManager?.cleanup()
+    void this.dbManager?.cleanup().catch((error: unknown) => {
+      console.error('Failed to save database during plugin unload:', error)
+    })
     this.dbManager = null
 
     // McpManager cleanup
@@ -168,11 +174,44 @@ export default class SmartComposerPlugin extends Plugin {
   }
 
   async loadSettings() {
-    this.settings = parseSmartComposerSettings(await this.loadData())
+    const data: unknown = await this.loadData()
+    this.settings = parseSmartComposerSettings(data)
+    this.settingsWriteBlocked = false
+    if (data != null && !isEqual(data, this.settings)) {
+      const dir =
+        this.manifest.dir ??
+        `${this.app.vault.configDir}/plugins/${this.manifest.id}`
+      const backupPath = normalizePath(
+        `${dir}/settings-backup-${Date.now()}-${uuidv4()}.json`,
+      )
+      try {
+        await this.app.vault.adapter.write(
+          backupPath,
+          JSON.stringify(data, null, 2),
+        )
+      } catch (error) {
+        this.settingsWriteBlocked = true
+        console.error('Failed to back up settings:', error)
+        new Notice(
+          'Original settings could not be backed up. Settings will not be overwritten; fix the storage error and reload the plugin.',
+        )
+        return
+      }
+      new Notice(`Original settings backed up to ${backupPath}`)
+    }
     await this.saveData(this.settings) // Save updated settings
   }
 
-  async setSettings(newSettings: SmartComposerSettings) {
+  async setSettings(update: SettingsUpdate) {
+    if (this.settingsWriteBlocked) {
+      const message =
+        'Settings cannot be saved until the original settings are backed up. Fix the storage error and reload the plugin.'
+      new Notice(message)
+      throw new Error(message)
+    }
+    const newSettings =
+      typeof update === 'function' ? update(this.settings) : update
+    if (newSettings === this.settings) return
     const validationResult = smartComposerSettingsSchema.safeParse(newSettings)
 
     if (!validationResult.success) {
@@ -181,12 +220,26 @@ ${validationResult.error.issues.map((v) => v.message).join('\n')}`)
       return
     }
 
-    this.settings = newSettings
-    this.ragEngine?.setSettings(newSettings)
-    this.settingsChangeListeners.forEach((listener) => listener(newSettings))
+    const validatedSettings = validationResult.data
+    this.settings = validatedSettings
+    try {
+      this.ragEngine?.setSettings(validatedSettings)
+    } catch (error) {
+      this.ragEngine?.cleanup()
+      this.ragEngine = null
+      this.ragEngineInitPromise = null
+      new Notice(
+        error instanceof Error
+          ? error.message
+          : 'Vault search settings could not be applied.',
+      )
+    }
+    this.settingsChangeListeners.forEach((listener) =>
+      listener(validatedSettings),
+    )
     this.settingsSavePromise = this.settingsSavePromise
       .catch(() => undefined)
-      .then(() => this.saveData(newSettings))
+      .then(() => this.saveData(validatedSettings))
     await this.settingsSavePromise
   }
 

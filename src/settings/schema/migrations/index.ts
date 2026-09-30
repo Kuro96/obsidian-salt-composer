@@ -1,9 +1,14 @@
+import type { ZodTypeAny } from 'zod'
+
 import {
   DEFAULT_CHAT_MODELS,
   DEFAULT_CHAT_MODEL_ID,
   DEFAULT_EMBEDDING_MODELS,
   DEFAULT_PROVIDERS,
 } from '../../../constants'
+import { chatModelSchema } from '../../../types/chat-model.types'
+import { embeddingModelSchema } from '../../../types/embedding-model.types'
+import { llmProviderSchema } from '../../../types/provider.types'
 
 import { RETIRED_CHAT_MODEL_IDS } from './retired-models'
 
@@ -22,10 +27,13 @@ function records(value: unknown): SettingsRecord[] {
 function mergeDefaults(
   existing: SettingsRecord[],
   defaults: readonly { id: string }[],
+  schema: ZodTypeAny,
 ): SettingsRecord[] {
   return [
     ...defaults.map((item) => ({
-      ...(existing.find((value) => value.id === item.id) ?? item),
+      ...(existing.find(
+        (value) => value.id === item.id && schema.safeParse(value).success,
+      ) ?? item),
     })),
     ...existing.filter(
       (item) => !defaults.some((value) => value.id === item.id),
@@ -39,6 +47,10 @@ export function migrateSettings(input: unknown): SettingsRecord {
   const data = { ...record(input) }
   const providers = records(data.providers)
   let chatModels = records(data.chatModels)
+  let retiredSelection =
+    data.chatModels === undefined &&
+    typeof data.chatModelId === 'string' &&
+    RETIRED_CHAT_MODEL_IDS.has(data.chatModelId)
 
   const apiKeys = {
     openai: 'openAIApiKey',
@@ -167,19 +179,33 @@ export function migrateSettings(input: unknown): SettingsRecord {
           provider.id === model.providerId &&
           provider.type === model.providerType,
       )
-      return !defaultProvider || !RETIRED_CHAT_MODEL_IDS.has(String(model.id))
+      const retired =
+        defaultProvider && RETIRED_CHAT_MODEL_IDS.has(String(model.id))
+      if (retired && model.id === data.chatModelId) retiredSelection = true
+      return !retired
     })
 
-  data.providers = mergeDefaults(providers, DEFAULT_PROVIDERS)
-  data.chatModels = mergeDefaults(chatModels, DEFAULT_CHAT_MODELS)
+  data.providers = mergeDefaults(
+    providers,
+    DEFAULT_PROVIDERS,
+    llmProviderSchema,
+  )
+  data.chatModels = mergeDefaults(
+    chatModels,
+    DEFAULT_CHAT_MODELS,
+    chatModelSchema,
+  )
   data.embeddingModels = mergeDefaults(
     records(data.embeddingModels),
     DEFAULT_EMBEDDING_MODELS,
+    embeddingModelSchema,
   )
   if (
-    !(data.chatModels as SettingsRecord[]).some(
-      (model) => model.id === data.chatModelId,
-    )
+    typeof data.chatModelId !== 'string' ||
+    (retiredSelection &&
+      !(data.chatModels as SettingsRecord[]).some(
+        (model) => model.id === data.chatModelId,
+      ))
   ) {
     data.chatModelId = DEFAULT_CHAT_MODEL_ID
   }
