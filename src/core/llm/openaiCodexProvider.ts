@@ -24,13 +24,13 @@ import {
   shouldUseObsidianRequestUrlNetworkStack,
 } from './transportPolicy'
 
-const GPT_5_6_FAST_MODEL_PATTERN = /^(gpt-5\.6-(?:sol|terra|luna))-fast$/
+const CODEX_FAST_MODEL_PATTERN = /^(gpt-6(?:\.1)?-(?:sol|terra|luna))-fast$/
 
 export function resolveCodexModel(model: string): {
   model: string
   serviceTier?: 'priority'
 } {
-  const fastModelMatch = GPT_5_6_FAST_MODEL_PATTERN.exec(model)
+  const fastModelMatch = CODEX_FAST_MODEL_PATTERN.exec(model)
   return fastModelMatch
     ? { model: fastModelMatch[1], serviceTier: 'priority' }
     : { model }

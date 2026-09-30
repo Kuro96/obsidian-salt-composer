@@ -9,19 +9,20 @@ import {
   resolveCodexModel,
 } from './openaiCodexProvider'
 
-describe('OpenAI Codex GPT-5.6 models', () => {
-  it.each(['sol', 'terra', 'luna'])(
-    'should map the %s fast model to priority service tier',
-    (submodel) => {
-      expect(resolveCodexModel(`gpt-5.6-${submodel}-fast`)).toEqual({
-        model: `gpt-5.6-${submodel}`,
-        serviceTier: 'priority',
-      })
-    },
-  )
+describe('OpenAI Codex GPT-6 and GPT-6.1 models', () => {
+  it.each(
+    ['6', '6.1'].flatMap((version) =>
+      ['sol', 'terra', 'luna'].map((submodel) => `gpt-${version}-${submodel}`),
+    ),
+  )('should map the %s fast model to priority service tier', (model) => {
+    expect(resolveCodexModel(`${model}-fast`)).toEqual({
+      model,
+      serviceTier: 'priority',
+    })
+  })
 
   it('should preserve a normal model without a service tier', () => {
-    expect(resolveCodexModel('gpt-5.6-sol')).toEqual({ model: 'gpt-5.6-sol' })
+    expect(resolveCodexModel('gpt-6.1-sol')).toEqual({ model: 'gpt-6.1-sol' })
   })
 
   it('should identify itself and request an SSE response', () => {
@@ -36,7 +37,7 @@ describe('OpenAI Codex GPT-5.6 models', () => {
   it('should pass reasoning and priority service tier to Responses API', () => {
     const adapter = new CodexMessageAdapter()
     const request: LLMRequest = {
-      model: 'gpt-5.6-sol',
+      model: 'gpt-6.1-sol',
       messages: [{ role: 'user', content: 'Hello' }],
       reasoning_effort: 'max' as ReasoningEffort,
       reasoning_summary: 'auto',
@@ -52,7 +53,7 @@ describe('OpenAI Codex GPT-5.6 models', () => {
 
     expect(requestBuilder.buildRequestBody({ request, stream: true })).toEqual(
       expect.objectContaining({
-        model: 'gpt-5.6-sol',
+        model: 'gpt-6.1-sol',
         reasoning: { effort: 'max', summary: 'auto' },
         service_tier: 'priority',
       }),
