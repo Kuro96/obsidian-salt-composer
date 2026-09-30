@@ -167,29 +167,32 @@ export class MetadataToolPack {
             : []
           const mergeArrays = args?.mergeArrays === true
 
-          await app.fileManager.processFrontMatter(file, (fm) => {
-            if (updates) {
-              for (const [key, value] of Object.entries(updates)) {
-                if (
-                  mergeArrays &&
-                  Array.isArray(fm[key]) &&
-                  Array.isArray(value)
-                ) {
-                  fm[key] = [
-                    ...new Set([
-                      ...(fm[key] as unknown[]),
-                      ...(value as unknown[]),
-                    ]),
-                  ]
-                } else {
-                  fm[key] = value
+          await app.fileManager.processFrontMatter(
+            file,
+            (fm: Record<string, unknown>) => {
+              if (updates) {
+                for (const [key, value] of Object.entries(updates)) {
+                  if (
+                    mergeArrays &&
+                    Array.isArray(fm[key]) &&
+                    Array.isArray(value)
+                  ) {
+                    fm[key] = [
+                      ...new Set([
+                        ...(fm[key] as unknown[]),
+                        ...(value as unknown[]),
+                      ]),
+                    ]
+                  } else {
+                    fm[key] = value
+                  }
                 }
               }
-            }
-            for (const key of removeKeys) {
-              delete fm[key]
-            }
-          })
+              for (const key of removeKeys) {
+                Reflect.deleteProperty(fm, key)
+              }
+            },
+          )
 
           const changed = [
             ...(updates ? Object.keys(updates) : []),
@@ -242,9 +245,12 @@ export class MetadataToolPack {
             throw new Error(
               `note_frontmatter_delete: file not found: ${relativePath}`,
             )
-          await app.fileManager.processFrontMatter(file, (fm) => {
-            for (const key of keys) delete fm[key]
-          })
+          await app.fileManager.processFrontMatter(
+            file,
+            (fm: Record<string, unknown>) => {
+              for (const key of keys) Reflect.deleteProperty(fm, key)
+            },
+          )
           return `Deleted frontmatter keys [${keys.join(', ')}] from ${relativePath}`
         },
       },

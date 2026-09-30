@@ -416,7 +416,7 @@ export class ToolExecutor {
           }
         }
         for (const key of removeKeys) {
-          delete frontmatter[key]
+          Reflect.deleteProperty(frontmatter, key)
         }
       }),
       summary: `Update frontmatter in ${targetPath}`,
@@ -448,7 +448,7 @@ export class ToolExecutor {
       beforeText,
       afterText: this.updateFrontmatterText(beforeText, (frontmatter) => {
         for (const key of keys) {
-          delete frontmatter[key]
+          Reflect.deleteProperty(frontmatter, key)
         }
       }),
       summary: `Delete frontmatter keys from ${targetPath}`,

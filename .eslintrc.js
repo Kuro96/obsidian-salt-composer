@@ -23,6 +23,11 @@ const config = {
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
   ],
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
   rules: {
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/require-await': 'off',
