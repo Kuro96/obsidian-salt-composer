@@ -54,6 +54,7 @@ scripts/diagnose-chat-storage.js
 
 # local temp worktrees
 tmp
+.omo/
 
 # Markdown
 *.md

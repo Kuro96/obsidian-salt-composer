@@ -51,6 +51,7 @@ manifest.json
 
 # local temp worktrees
 tmp
+.omo/
 
 # Markdown
 *.md
